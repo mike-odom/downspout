@@ -1,0 +1,8 @@
+# This is per server config
+config.js
+
+# JetBrains IDE user settings
+.idea
+
+# NodeJS
+node_modules/
