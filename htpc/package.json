@@ -16,6 +16,7 @@
     "morgan": "~1.7.0",
     "serve-favicon": "~2.3.0",
     "upath": "^0.2.0",
-    "async": "latest"
+    "async": "latest",
+    "ftps": "latest"
   }
 }
