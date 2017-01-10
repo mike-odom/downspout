@@ -1,6 +1,4 @@
 const JSFtp = require('./jsftp-lsr')(require("jsftp"));
-const FTPS = require('./ftps');
-
 const config = require('../config.js');
 
 const downloader = {
@@ -18,36 +16,14 @@ function newJSFTP() {
     });
 }
 
-function newLFTP() {
-    return new FTPS({
-        host: ftpConfig.host, // required
-        username: ftpConfig.user, // Optional. Use empty username for anonymous access.
-        password: ftpConfig.password, // Required if username is not empty, except when requiresPassword: false
-        protocol: 'sftp', // Optional, values : 'ftp', 'sftp', 'ftps', ... default: 'ftp'
-        // protocol is added on beginning of host, ex : sftp://domain.com in this case
-        port: ftpConfig.port, // Optional
-        // port is added to the end of the host, ex: sftp://domain.com:22 in this case
-        escape: true, // optional, used for escaping shell characters (space, $, etc.), default: true
-        retries: 1, // Optional, defaults to 1 (1 = no retries, 0 = unlimited retries)
-        timeout: 10, // Optional, Time before failing a connection attempt. Defaults to 10
-        retryInterval: 5, // Optional, Time in seconds between attempts. Defaults to 5
-        retryMultiplier: 1, // Optional, Multiplier by which retryInterval is multiplied each time new attempt fails. Defaults to 1
-        requiresPassword: true, // Optional, defaults to true
-        autoConfirm: true, // Optional, is used to auto confirm ssl questions on sftp or fish protocols, defaults to false
-        cwd: '', // Optional, defaults to the directory from where the script is executed
-        additionalLftpCommands: '' // Additional commands to pass to lftp, splitted by ';'
-    });
-}
-
-downloader.sync = function (result) {
+downloader.sync = function () {
     if (downloader.downloading) {
         return;
     }
 
-    //JSFtpDownload(downloadCompleteCallback)
+    JSFtpDownload(downloadCompleteCallback)
 
-    LFtpDownload(downloadCompleteCallback);
-
+    //testSpawn();
 
     // ftp.list(ftpConfig.root, function (error, data) {
     //     console.log('List complete');
@@ -63,48 +39,67 @@ function downloadCompleteCallback() {
 function JSFtpDownload(completedCallback) {
     let ftp = newJSFTP();
 
-    ftp.list("/seedbox-sync", function (err, data) {
+    let syncFolder = "/seedbox-sync";
+
+    ftp.lsr(syncFolder, function (err, data) {
         if (err) {
             console.log(err);
-            result.send(err);
             return;
         }
-        console.log('File structure', JSON.stringify(data, null, 2));
+        //console.log('File structure', JSON.stringify(data, null, 2));
 
         //TODO: Flatten out this list
+        let files = processFilesJSON(data, syncFolder, 20);
 
         //TODO: Sort the list by date
 
-        //TODO: Start popping items off the list and downloading them via FTP
+        //TODO: Start popping items off the list
 
-        result.send("Done");
+            //TODO: Download the file
+
+            //TODO: Delete the symlink
+
+            //TODO: Tell media server that files have been updated
 
         completedCallback();
     });
 }
 
-function LFtpDownload(completedCallback) {
-    let ftp = newLFTP();
+const FTP_TYPE_FILE = 0;
+const FTP_TYPE_DIRECTORY = 1;
 
-    const opts = {
-        remoteDir: '',
-        localDir: '',
-        //Raw options
-        options: '',
-        upload: false,
-        parallel: false,
-        filter: '',
-    };
+/**
+ * Recursive function to traverse a file tree.
+ *
+ * JavaScript has a maximum depth of 1000. But we should do something lower.
+ *
+ * @param data an array of files
+ * @param path the path where these files are located
+ * @param depth how deep to go down in the children
+ */
+function processFilesJSON(data, path, depth) {
+    path = appendSlash(path);
 
-    //ftp.mirror(opts).exec(console.log);
+    if (depth == 0) {
+        console.log("Maximum file depth reached, exiting", path);
+        return;
+    }
+    for (let file of data) {
+        if (file.type == FTP_TYPE_FILE) {
+            console.log(path + file.name);
+        } else if (file.type == FTP_TYPE_DIRECTORY) {
+            if (typeof file.children == 'object') {
+                const newPath = path + file.name;
+                processFilesJSON(file.children, path, depth - 1);
+            }
+        }
+    }
 
-    //var stream = ftp.raw('find').execAsStream();
-    // stream.pipe(process.stdout);
+}
 
-    // //TODO: If lftp is not installed, no error will occur. OOPS
-    ftp.ls().exec(console.log, function(err, data) {
-        console.log("moo", data);
-    });
+function appendSlash(path) {
+    if (path.charAt(path.length -1) == '/') return path;
+    return path + '/';
 }
 
 module.exports = downloader;

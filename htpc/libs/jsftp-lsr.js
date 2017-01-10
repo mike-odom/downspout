@@ -41,8 +41,6 @@ function lsr(root, callback) {
         function iter(clb) {
             var _path = _lsrFindPath(result[0], currentDirectory, root);
 
-            console.log(_path);
-
             ftp.ls(_path, function(err, data) {
                 if(err) return clb(err);
                 currentDirectory.children = data;
