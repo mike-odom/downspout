@@ -1,5 +1,6 @@
 const JSFtp = require('./jsftp-lsr')(require("jsftp"));
 const config = require('../config.js');
+const fakeData = require('../fakeData.js');
 
 const downloader = {
     downloading: false
@@ -36,17 +37,25 @@ function downloadCompleteCallback() {
     downloader.downloading = false;
 }
 
+function fakeLSR(path, callback) {
+    let data = fakeData.twoFiles();
+
+    callback(null, data);
+
+}
+
 function JSFtpDownload(completedCallback) {
     let ftp = newJSFTP();
 
     let syncFolder = "/seedbox-sync";
 
-    ftp.lsr(syncFolder, function (err, data) {
+    //ftp.lsr
+    fakeLSR(syncFolder, function (err, data) {
         if (err) {
             console.log(err);
             return;
         }
-        //console.log('File structure', JSON.stringify(data, null, 2));
+        console.log('File structure', JSON.stringify(data, null, 2));
 
         //TODO: Flatten out this list
         let files = processFilesJSON(data, syncFolder, 20);
@@ -76,8 +85,9 @@ const FTP_TYPE_DIRECTORY = 1;
  * @param data an array of files
  * @param path the path where these files are located
  * @param depth how deep to go down in the children
+ * @param newList
  */
-function processFilesJSON(data, path, depth) {
+function processFilesJSON(data, path, depth, newList = []) {
     path = appendSlash(path);
 
     if (depth == 0) {
@@ -87,6 +97,7 @@ function processFilesJSON(data, path, depth) {
     for (let file of data) {
         if (file.type == FTP_TYPE_FILE) {
             console.log(path + file.name);
+            newList.push(file);
         } else if (file.type == FTP_TYPE_DIRECTORY) {
             if (typeof file.children == 'object') {
                 const newPath = path + file.name;
