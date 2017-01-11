@@ -2,6 +2,7 @@ const JSFtp = require('./jsftp-lsr')(require("jsftp"));
 const config = require('../config.js');
 const fakeData = require('../fakeData.js');
 const FtpFile = require('../objects/FtpFile.js');
+const mkdirp = require('mkdirp');
 
 const downloader = {
     downloading: false
@@ -86,12 +87,21 @@ function downloadNextInQueue() {
 
     let file = downloadQueue[downloadQueue.length - 1];
 
-    let newPath = "c:\\" + file.name;
-    ftp.get(file.fullPath, newPath, function(err) {
+    let localPath = FtpFile.appendSlash(config.localSyncFolder) + file.fullRelativePath;
+
+    //Create the full path. jsftp will not error if the folder doesn't exist.
+    mkdirp(localPath, function (err) {
+        if (err) console.error(err);
+        else console.log('dir created')
+    });
+
+    //TODO: Change this to use streams so we know the file download status.
+
+    ftp.get(file.fullPath, localPath, function(err) {
         if (err) {
             console.log("There was an error downloading the file: ", err);
         } else {
-            console.log("File downloaded succesfully", newPath);
+            console.log("File downloaded succesfully", localPath);
 
             //TODO: Delete the symlink on the server
             //TODO: Delete __seedbox_sync_folder__ file
@@ -113,26 +123,27 @@ const FTP_TYPE_DIRECTORY = 1;
  * JavaScript has a maximum depth of 1000. But we should do something lower.
  *
  * @param data an array of files
- * @param path the path where these files are located
+ * @param basePath the path where these files are located
  * @param depth how deep to go down in the children
+ * @param relativePath
  * @param outList
  */
-function processFilesJSON(data, path, depth = 20, outList = []) {
-    path = FtpFile.appendSlash(path);
+function processFilesJSON(data, basePath, depth = 20, relativePath = "", outList = []) {
+    relativePath = FtpFile.appendSlash(relativePath);
 
     if (depth == 0) {
-        console.log("Maximum file depth reached, exiting", path);
+        console.log("Maximum file depth reached, exiting", relativePath);
         return;
     }
     for (let file of data) {
         if (file.type == FTP_TYPE_FILE) {
-            console.log(path + file.name);
-            let fileObj = new FtpFile(path, file);
+            console.log(relativePath + file.name);
+            let fileObj = new FtpFile(basePath, relativePath, file);
             outList.push(fileObj);
         } else if (file.type == FTP_TYPE_DIRECTORY) {
             if (typeof file.children == 'object') {
-                const newPath = path + file.name;
-                processFilesJSON(file.children, newPath, depth - 1, outList);
+                const newPath = relativePath + file.name;
+                processFilesJSON(file.children, basePath, depth - 1, newPath, outList);
             }
         }
     }
