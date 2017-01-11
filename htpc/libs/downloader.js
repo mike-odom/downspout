@@ -1,12 +1,15 @@
 const JSFtp = require('./jsftp-lsr')(require("jsftp"));
 const config = require('../config.js');
 const fakeData = require('../fakeData.js');
+const FtpFile = require('../objects/FtpFile.js');
 
 const downloader = {
     downloading: false
 };
 
 const ftpConfig = config.seedboxFTP;
+
+const ftp = newJSFTP();
 
 function newJSFTP() {
     return new JSFtp({
@@ -22,7 +25,9 @@ downloader.sync = function () {
         return;
     }
 
-    JSFtpDownload(downloadCompleteCallback)
+    downloader.downloading = true;
+
+    JSFtpDownload(downloadCompleteCallback);
 
     //testSpawn();
 
@@ -44,33 +49,58 @@ function fakeLSR(path, callback) {
 
 }
 
-function JSFtpDownload(completedCallback) {
-    let ftp = newJSFTP();
+let downloadQueue = [];
 
+function JSFtpDownload(completedCallback) {
     let syncFolder = "/seedbox-sync";
 
+    //fakeLSR
     //ftp.lsr
-    fakeLSR(syncFolder, function (err, data) {
+    ftp.lsr(syncFolder, function (err, data) {
         if (err) {
             console.log(err);
             return;
         }
-        console.log('File structure', JSON.stringify(data, null, 2));
+        //console.log('File structure', JSON.stringify(data, null, 2));
 
-        //TODO: Flatten out this list
-        let files = processFilesJSON(data, syncFolder, 20);
+        //TODO: Flatten out this list and group folders with __seedbox_sync_folder__ files in them
+        downloadQueue = processFilesJSON(data, syncFolder, 20);
 
-        //TODO: Sort the list by date
+        //TODO: Sort each group's contents by date
+        downloadQueue.sort(FtpFile.sortNewestFirst);
 
-        //TODO: Start popping items off the list
+        //console.log(downloadQueue);
 
-            //TODO: Download the file
+        //TODO: Sort the groups by date
 
-            //TODO: Delete the symlink
+        //Go Async
+        downloadNextInQueue();
+    });
+}
 
-            //TODO: Tell media server that files have been updated
+function downloadNextInQueue() {
+    if (!downloadQueue.length) {
+        downloadCompleteCallback();
+        return;
+    }
 
-        completedCallback();
+    let file = downloadQueue[downloadQueue.length - 1];
+
+    let newPath = "c:\\" + file.name;
+    ftp.get(file.fullPath, newPath, function(err) {
+        if (err) {
+            console.log("There was an error downloading the file: ", err);
+        } else {
+            console.log("File downloaded succesfully", newPath);
+
+            //TODO: Delete the symlink on the server
+            //TODO: Delete __seedbox_sync_folder__ file
+            //TODO: Tell media server that files have been updated. If we've finished a section.
+
+            downloadQueue.pop();
+
+            downloadNextInQueue();
+        }
     });
 }
 
@@ -85,10 +115,10 @@ const FTP_TYPE_DIRECTORY = 1;
  * @param data an array of files
  * @param path the path where these files are located
  * @param depth how deep to go down in the children
- * @param newList
+ * @param outList
  */
-function processFilesJSON(data, path, depth, newList = []) {
-    path = appendSlash(path);
+function processFilesJSON(data, path, depth = 20, outList = []) {
+    path = FtpFile.appendSlash(path);
 
     if (depth == 0) {
         console.log("Maximum file depth reached, exiting", path);
@@ -97,20 +127,17 @@ function processFilesJSON(data, path, depth, newList = []) {
     for (let file of data) {
         if (file.type == FTP_TYPE_FILE) {
             console.log(path + file.name);
-            newList.push(file);
+            let fileObj = new FtpFile(path, file);
+            outList.push(fileObj);
         } else if (file.type == FTP_TYPE_DIRECTORY) {
             if (typeof file.children == 'object') {
                 const newPath = path + file.name;
-                processFilesJSON(file.children, path, depth - 1);
+                processFilesJSON(file.children, newPath, depth - 1, outList);
             }
         }
     }
 
-}
-
-function appendSlash(path) {
-    if (path.charAt(path.length -1) == '/') return path;
-    return path + '/';
+    return outList;
 }
 
 module.exports = downloader;
