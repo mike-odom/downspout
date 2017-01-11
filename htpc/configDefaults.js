@@ -6,4 +6,6 @@ config.seedboxFTP = {
     password: "[Somepassword]"
 };
 
+config.localSyncFolder = "~/somePath";
+
 module.exports = config;
