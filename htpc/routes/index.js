@@ -7,7 +7,7 @@ var downloader = require('../libs/downloader');
 router.get('/', function (request, result, next) {
     //res.render('index', { title: 'Express' });
 
-    downloader.sync(result);
+    //downloader.sync(result);
 });
 
 module.exports = router;

@@ -29,14 +29,16 @@ downloader.sync = function () {
     downloader.downloading = true;
 
     JSFtpDownload(downloadCompleteCallback);
+};
 
-    //testSpawn();
+downloader.status = function() {
+    /*let result = "Downloaded: ";
+    for (let file of completedList) {
+        result += file.fullRelativePath + '\n';
+    }
+    return result;*/
 
-    // ftp.list(ftpConfig.root, function (error, data) {
-    //     console.log('List complete');
-    //     console.log(data);
-    //     result.send(data);
-    // });
+    return fakeData.statusPage();
 };
 
 function downloadCompleteCallback() {
@@ -51,6 +53,7 @@ function fakeLSR(path, callback) {
 }
 
 let downloadQueue = [];
+let completedList = [];
 
 function JSFtpDownload(completedCallback) {
     let syncFolder = "/seedbox-sync";
@@ -104,10 +107,14 @@ function downloadNextInQueue() {
             console.log("File downloaded succesfully", localPath);
 
             //TODO: Delete the symlink on the server
+            //ftp.delete()
+
             //TODO: Delete __seedbox_sync_folder__ file
             //TODO: Tell media server that files have been updated. If we've finished a section.
 
             downloadQueue.pop();
+
+            completedList.push(file);
 
             downloadNextInQueue();
         }
