@@ -1,4 +1,4 @@
-var config = {};
+const config = {};
 
 config.seedboxFTP = {
     host: "localhost",
