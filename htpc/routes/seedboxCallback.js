@@ -1,9 +1,27 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const bodyParser = require('body-parser');
+
+const router = express.Router();
+
+const downloader = require('../libs/downloader');
 
 /* GET home page. */
-router.get('/', function (req, res,  next) {
-    res.send('callback');
+router.post('/', bodyParser.json(), function (req, res, next) {
+    //downloader.seedboxCallback();
+
+    res.json(req.body);
+    //res.send("Sync initiated");
+
+    /**
+     req.body will be in the form of
+     {
+        "torrent": {
+            "id": "1234",
+            "name": "Small World.avi"),
+            "relativeDir": "tv")
+        }
+    }
+     */
 });
 
 module.exports = router;
