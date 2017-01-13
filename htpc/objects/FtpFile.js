@@ -10,7 +10,7 @@ function FtpFile(basePath, relativePath, ftpData) {
     Object.defineProperty(this, 'fullRelativePath', { value: FtpFile.appendSlash(this._relativePath) + this._data.name });
     Object.defineProperty(this, 'timestamp', { value: this._timestamp });
     Object.defineProperty(this, 'fullPath', {
-        value: FtpFile.appendSlash(this._basePath) + FtpFile.appendSlash(this._relativePath) + this._data.name
+        value: this._data.target
     });
 }
 
