@@ -58,7 +58,7 @@ let downloadQueue = [];
 let completedList = [];
 
 function JSFtpDownload(completedCallback) {
-    let syncFolder = config.seedboxFTP.root;
+    let syncFolder = config.seedboxFTP.syncRoot;
 
     //fakeLSR
     //ftp.lsr
