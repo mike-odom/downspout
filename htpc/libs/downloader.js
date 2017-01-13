@@ -43,6 +43,8 @@ downloader.status = function() {
 
 function downloadCompleteCallback() {
     downloader.downloading = false;
+
+    console.log("Downloading completed");
 }
 
 function fakeLSR(path, callback) {
@@ -90,13 +92,17 @@ function downloadNextInQueue() {
 
     let file = downloadQueue[downloadQueue.length - 1];
 
-    let localPath = FtpFile.appendSlash(config.localSyncFolder) + file.fullRelativePath;
+    let localDirectory = FtpFile.appendSlash(config.localSyncFolder) + file.fullRelativePath;
+
+    console.log("mkdirp", localDirectory);
 
     //Create the full path. jsftp will not error if the folder doesn't exist.
-    mkdirp(localPath, function (err) {
+    mkdirp(localDirectory, function (err) {
         if (err) console.error(err);
         else console.log('dir created')
     });
+
+    let localPath = FtpFile.appendSlash(localDirectory) + file.name;
 
     //TODO: Change this to use streams so we know the file download status.
 

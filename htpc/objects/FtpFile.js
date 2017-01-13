@@ -7,10 +7,15 @@ function FtpFile(basePath, relativePath, ftpData) {
     this._timestamp = ftpData.time;
 
     Object.defineProperty(this, 'name', { value: this._data.name });
-    Object.defineProperty(this, 'fullRelativePath', { value: FtpFile.appendSlash(this._relativePath) + this._data.name });
+
+    //TODO: Change this to relativeDirectory
+    Object.defineProperty(this, 'fullRelativePath', { value: FtpFile.appendSlash(this._relativePath) });
     Object.defineProperty(this, 'timestamp', { value: this._timestamp });
     Object.defineProperty(this, 'fullPath', {
-        value: this._data.target
+        value: (this._data.hasOwnProperty("target")) ?
+            //Use target if it's a symlink
+            FtpFile.appendSlash(this._basePath) + FtpFile.appendSlash(this._relativePath) + this._data.target
+            : FtpFile.appendSlash(this._basePath) + FtpFile.appendSlash(this._relativePath) + this._data.name
     });
 }
 
