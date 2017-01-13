@@ -5,7 +5,7 @@ var downloader = require('../libs/downloader');
 
 /* GET home page. */
 router.get('/', function (request, result, next) {
-    //res.render('index', { title: 'Express' });
+    result.render('index', { title: 'Express' });
 
     //downloader.sync(result);
 });
