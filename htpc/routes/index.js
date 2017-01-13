@@ -4,8 +4,8 @@ var router = express.Router();
 var downloader = require('../libs/downloader');
 
 /* GET home page. */
-router.get('/', function (request, result, next) {
-    result.render('index', { title: 'Express' });
+router.get('/', function (req, res, next) {
+    res.render('index', { title: 'Express' });
 
     //downloader.sync(result);
 });
