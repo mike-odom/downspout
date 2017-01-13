@@ -8,7 +8,9 @@ torrentId=$1
 torrentName=$2
 torrentPath="$3/$2"
 
-baseMediaFolder=/home/someuser/files/transfer/tv
+#TODO: Put these in a config file
+baseMediaFolder=/microverse/library/SeedboxSync/testFiles
+destDir="../toUpload"
 
 if [[ $torrentPath != *$baseMediaFolder* ]]
 then
@@ -17,7 +19,6 @@ then
 fi
 
 echo $torrentPath
-destDir="./toUpload"
 
 echo "--------------" >> lftp.log
 echo "Uploading $torrentPath" >> lftp.log
@@ -25,10 +26,11 @@ echo "Uploading $torrentPath" >> lftp.log
 basePath="${torrentPath/$baseMediaFolder/}"
 echo "basePath: $basePath"
 if [ -d "$torrentPath" ]; then
+        # The torrent was a directory
         mkdir -p "$destDir/$basePath"
 
-        //TODO: Directory, place __seedbox_sync_folder__ marker inside
-            so syncer knows to treat this folder as it's own contained entity
+        #TODO: Directory, place __seedbox_sync_folder__ marker inside
+        #    so syncer knows to treat this folder as it's own contained entity
 
         #If it's a directory, we need to recurse through
         find "$torrentPath" -mindepth 1 -printf "%P\n" | while read f
@@ -42,7 +44,7 @@ if [ -d "$torrentPath" ]; then
                         destLink=$destDir/$basePath/$f
                         echo "Linking $srcFile to $destLink"
 
-                        ln -s "$srcFile" "$destLink";
+                        ln -s -r "$srcFile" "$destLink";
                 fi
         done
 else
@@ -54,8 +56,12 @@ else
         mkdir -p "$destDir"
 
         fileName=$(basename "$torrentPath")
+
         destLink=$destDir/$fileName
-        ln -s "$torrentPath" "$destLink"
+
+        echo "Linking $torrentPath to $destLink"
+
+        ln -s -r "$torrentPath" "$destLink"
 fi
 
 #./upload.sh &
