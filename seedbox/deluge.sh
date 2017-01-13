@@ -27,6 +27,7 @@ configError() {
     example:
     baseMediaDir="/deluge/downloaded"
     syncDir="../toUpload"
+    syncServer=http://192.168.0.5:3000
 
     baseMediaDir is used to create relative folders inside of syncDir. If using the example settings and calling
         ./deluge "1234" "MyVideo.avi" "/deluge/downloaded/tv/someShow"
@@ -94,7 +95,11 @@ echo ${torrentPath}
 echo "--------------" >> lftp.log
 echo "Uploading $torrentPath" >> lftp.log
 
+# Remove $baseMediaDir prefix
 basePath="${torrentPath/$baseMediaDir/}"
+# Remove optional leading /
+basePath="${basePath#\/}"
+
 echo "basePath: $basePath"
 if [ -d "$torrentPath" ]; then
         destDir="$syncDir/$basePath"
@@ -138,4 +143,28 @@ else
         ln -s -r "$torrentPath" "$destLink"
 fi
 
-#./upload.sh &
+# Done creating sym links, let the seedbox know about this new data. This can fail, and that's ok.
+echo "Notifying sync server"
+
+# helper function to use Python to encode json data
+json_escape () {
+    # TODO: Error if python isn't available for some reason and default to non-escaped
+
+    printf '%s' "$1" | python -c 'import json,sys; print(json.dumps(sys.stdin.read()))'
+}
+
+json=$(cat << EOM
+{
+    "torrent": {
+        "id": $(json_escape "${torrentId}"),
+        "name": $(json_escape "${torrentName}"),
+        "relativeDir": $(json_escape "${basePath}")
+    }
+}
+EOM
+)
+
+echo ${json} | curl -v -H "Accept: application/json" -H "Content-type: application/json" -X POST -d @-  ${syncServer}/seedboxCallback
+
+#content=$(wget ${syncServer}/seedboxCallback -O -)
+#echo ${content}
