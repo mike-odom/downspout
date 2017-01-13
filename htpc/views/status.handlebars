@@ -1,6 +1,19 @@
 <h3>{{title}}</h3>
 <div id="vueApp">
+
 </div>
 
 <script>
+var vueApp = new Vue({
+  delimiters: ['${', '}'],
+  el: '#vueApp', 
+  data: {
+    
+  }
+});
+
+//Need to rig up fetching data initially, then every <x> seconds
+$(document).ready(function(){
+  
+});
 </script>
