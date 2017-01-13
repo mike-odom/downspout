@@ -56,7 +56,7 @@ let downloadQueue = [];
 let completedList = [];
 
 function JSFtpDownload(completedCallback) {
-    let syncFolder = "/seedbox-sync";
+    let syncFolder = config.seedboxFTP.root;
 
     //fakeLSR
     //ftp.lsr
@@ -65,7 +65,7 @@ function JSFtpDownload(completedCallback) {
             console.log(err);
             return;
         }
-        //console.log('File structure', JSON.stringify(data, null, 2));
+        console.log('Remote structure', JSON.stringify(data, null, 2));
 
         //TODO: Flatten out this list and group folders with __seedbox_sync_folder__ files in them
         downloadQueue = processFilesJSON(data, syncFolder, 20);
@@ -100,6 +100,7 @@ function downloadNextInQueue() {
 
     //TODO: Change this to use streams so we know the file download status.
 
+    console.log("Downloading", file.fullPath);
     ftp.get(file.fullPath, localPath, function(err) {
         if (err) {
             console.log("There was an error downloading the file: ", err);
@@ -123,6 +124,7 @@ function downloadNextInQueue() {
 
 const FTP_TYPE_FILE = 0;
 const FTP_TYPE_DIRECTORY = 1;
+const FTP_TYPE_SYM_LINK = 2;
 
 /**
  * Recursive function to traverse a file tree.
@@ -143,7 +145,8 @@ function processFilesJSON(data, basePath, depth = 20, relativePath = "", outList
         return;
     }
     for (let file of data) {
-        if (file.type == FTP_TYPE_FILE) {
+        //Only transfer symlinks
+        if (file.type == FTP_TYPE_SYM_LINK) {
             console.log(relativePath + file.name);
             let fileObj = new FtpFile(basePath, relativePath, file);
             outList.push(fileObj);
