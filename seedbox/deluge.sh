@@ -7,7 +7,9 @@ cd "${0%/*}"
 # You will need to create a config.sh file for settings. See configError for info.
 #
 # This script is designed to be called by the Deluge Execute plugin after a torrent is downloaded.
-# But it could be used by whatever app you wish.
+#    (http://dev.deluge-torrent.org/wiki/Plugins/Execute)
+# But it could be used by whatever app you wish. A simple wrapper script could make it used with any other torrent app.
+#
 # Usage: ./deluge.sh [Torrent Id] [File Name or Directory] [Parent directory where this file or directory is located]
 # ex: ./deluge.sh "South Park" South.Park.S19E03.HDTV.x264-KILLERS.mp4 /home/someuser/files/transfer/tv
 
