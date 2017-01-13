@@ -1,33 +1,102 @@
 #!/bin/bash
 cd "${0%/*}"
 #This script takes input from Deluge and will create symlinks and directories for each file in a torrent
-# These symlinked files can then be rsync'd up to Gazorpazorp and be deleted when done.
-# ex. usage: ./deluge.sh asdf South.Park.S19E03.HDTV.x264-KILLERS.mp4 /home/someuser/files/transfer/tv
+# The sync server will then be notified and start syncing from here.
+# These symlinks will be deleted once downloaded.
+#
+# You will need to create a config.sh file for settings. See configError for info.
+#
+# This script is designed to be called by the Deluge Execute plugin after a torrent is downloaded.
+# But it could be used by whatever app you wish.
+# Usage: ./deluge.sh [Torrent Id] [File Name or Directory] [Parent directory where this file or directory is located]
+# ex: ./deluge.sh "South Park" South.Park.S19E03.HDTV.x264-KILLERS.mp4 /home/someuser/files/transfer/tv
+
+configError() {
+    cat << EOM
+    Error:
+        $1
+
+    You need to setup a config.sh file in the directory of this script
+
+    It should contain:
+    baseMediaDir=[The parent directory where are your torrent files reside]
+    syncDir=[The folder owned by this script where symlinks will be created and downloaded from]
+
+    example:
+    baseMediaDir="/deluge/downloaded"
+    syncDir="../toUpload"
+
+    baseMediaDir is used to create relative folders inside of syncDir. If using the example settings and calling
+        ./deluge "1234" "MyVideo.avi" "/deluge/downloaded/tv/someShow"
+    Then the following sym link will be created
+        ../toUpload/tv/someShow/MyVideo.avi -> /deluge/downloaded/tv/someShow/MyVideo.avi
+
+    It is critical for FTP file transfers that baseMediaDir and syncDir be accessible by the FTP client
+EOM
+    exit
+}
+
+# Config processing
+
+if [ ! -f config.sh ]; then
+    configError "config.sh file not found"
+fi
+
+source config.sh
+
+if [[ ! -d ${baseMediaDir} ]]; then
+    configError "Invalid baseMediaDir: $baseMediaDir"
+fi
+
+if [[ ! -d ${syncDir} ]]; then
+    configError "Invalid syncDir: $syncDir"
+fi
+
+argumentError() {
+    cat << EOM
+    Error:
+        $1
+
+    Usage: ./deluge.sh [Torrent Name] [File Name or Directory] [Parent directory where this file or directory is located]"
+EOM
+    exit
+}
+
+missingParameter() {
+    argumentError "Missing parameter: $1"
+}
+
+# Process the command line arguments
 
 torrentId=$1
 torrentName=$2
-torrentPath="$3/$2"
+torrentParentDir=$3
 
-#TODO: Put these in a config file
-baseMediaFolder=/microverse/library/SeedboxSync/testFiles
-destDir="../toUpload"
-
-if [[ $torrentPath != *$baseMediaFolder* ]]
-then
-    echo "Error, torrent path isn't in baseMediaFolder: $torrentPath"
-    exit
+if [ -z "$torrentName" ]; then
+    missingParameter "Torrent Name"
 fi
 
-echo $torrentPath
+if [ -z "$torrentParentDir" ]; then
+    missingParameter "Parent Directory"
+fi
+
+torrentPath="$torrentParentDir/$torrentName"
+
+if [[ ${torrentPath} != *${baseMediaDir}* ]]
+then
+    argumentError "Torrent path \"$torrentPath\" isn't in baseMediaDir \"$baseMediaDir\""
+fi
+
+echo ${torrentPath}
 
 echo "--------------" >> lftp.log
 echo "Uploading $torrentPath" >> lftp.log
 
-basePath="${torrentPath/$baseMediaFolder/}"
+basePath="${torrentPath/$baseMediaDir/}"
 echo "basePath: $basePath"
 if [ -d "$torrentPath" ]; then
         # The torrent was a directory
-        mkdir -p "$destDir/$basePath"
+        mkdir -p "$syncDir/$basePath"
 
         #TODO: Directory, place __seedbox_sync_folder__ marker inside
         #    so syncer knows to treat this folder as it's own contained entity
@@ -36,12 +105,12 @@ if [ -d "$torrentPath" ]; then
         find "$torrentPath" -mindepth 1 -printf "%P\n" | while read f
         do
                 if [ -d "$torrentPath/$f" ]; then
-                        newDir=$destDir/$basePath/$f
+                        newDir=${syncDir}/${basePath}/${f}
                         echo "Making dir $newDir"
                         mkdir -p "$newDir"
                 else
-                        srcFile=$torrentPath/$f
-                        destLink=$destDir/$basePath/$f
+                        srcFile=${torrentPath}/$f
+                        destLink=${syncDir}/${basePath}/${f}
                         echo "Linking $srcFile to $destLink"
 
                         ln -s -r "$srcFile" "$destLink";
@@ -49,7 +118,7 @@ if [ -d "$torrentPath" ]; then
         done
 else
         #it's a file
-        destLink="$destDir/$basePath"
+        destLink="$syncDir/$basePath"
 
         destDir=$(dirname "$destLink")
 
