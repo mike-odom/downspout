@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Destroy everything, these were just symlinks and stuff anyways.
-rm -R ../toUpload
+rm -R ../toUpload/*
 
 # Folder with .avi and .srt
 ./deluge.sh "Sausage Party" "Sausage Party" /microverse/library/SeedboxSync/testFiles/movies
