@@ -97,8 +97,11 @@ echo "Uploading $torrentPath" >> lftp.log
 basePath="${torrentPath/$baseMediaDir/}"
 echo "basePath: $basePath"
 if [ -d "$torrentPath" ]; then
+        destDir="$syncDir/$basePath"
         # The torrent was a directory
-        mkdir -p "$syncDir/$basePath"
+        mkdir -p $destDir
+
+        touch $destDir/__seedbox_sync_directory__
 
         #TODO: Directory, place __seedbox_sync_folder__ marker inside
         #    so syncer knows to treat this folder as it's own contained entity
