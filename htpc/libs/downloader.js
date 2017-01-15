@@ -38,7 +38,25 @@ downloader.status = function() {
     }
     return result;*/
 
-    return fakeData.statusPage();
+    let downloads = [];
+
+    /** @type {FtpFile} */
+    let file;
+    for (file of downloadQueue) {
+        downloads.push(file.json());
+    }
+
+    return {
+        "stats": {
+            "download_rate": 56.3,
+            "max_download_rate": 5000001,
+            "num_connections": 1,
+            "max_num_connections": 2
+        },
+        "downloads": downloads
+    };
+
+    //return fakeData.statusPage();
 };
 
 function downloadCompleteCallback() {
@@ -106,6 +124,8 @@ function downloadNextInQueue() {
 
     //TODO: Change this to use streams so we know the file download status.
 
+    ftp.on('progress', ftpProgressUpdate);
+
     console.log("Downloading", file.fullPath);
     ftp.get(file.fullPath, localPath, function(err) {
         if (err) {
@@ -165,6 +185,27 @@ function processFilesJSON(data, basePath, depth = 20, relativePath = "", outList
     }
 
     return outList;
+}
+
+/**
+ *
+ * @param data - { transfered, total, filename, action (get/put) }
+ */
+function ftpProgressUpdate(data) {
+    //console.log('Transferred ' + data.transferred + 'bytes of ' + data.total);
+    console.log('Progress', data);
+
+    /**  @type {FtpFile} file **/
+    let file;
+
+    for (file of downloadQueue) {
+        if (file.fullPath == data.filename) {
+            file.transferred = data.transferred;
+
+            break;
+        }
+    }
+
 }
 
 module.exports = downloader;
