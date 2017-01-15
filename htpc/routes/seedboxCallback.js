@@ -12,6 +12,8 @@ router.post('/', bodyParser.json(), function (req, res, next) {
     res.json(req.body);
     //res.send("Sync initiated");
 
+    downloader.sync();
+
     /**
      req.body will be in the form of
      {
