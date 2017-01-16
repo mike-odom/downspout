@@ -104,7 +104,7 @@ echo "basePath: $basePath"
 if [ -d "$torrentPath" ]; then
         destDir="$syncDir/$basePath"
         # The torrent was a directory
-        mkdir -p $destDir
+        mkdir -p "$destDir"
 
         touch $destDir/__seedbox_sync_directory__
 
