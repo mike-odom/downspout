@@ -90,6 +90,8 @@ function JSFtpDownload(completedCallback) {
         //TODO: Flatten out this list and group folders with __seedbox_sync_folder__ files in them
         downloadQueue = processFilesJSON(data, syncFolder, 20);
 
+        updateFileSizes(downloadQueue);
+
         //TODO: Sort each group's contents by date
         downloadQueue.sort(FtpFile.sortNewestFirst);
 
@@ -187,13 +189,34 @@ function processFilesJSON(data, basePath, depth = 20, relativePath = "", outList
     return outList;
 }
 
+function updateFileSizes(list) {
+    for (let file of list) {
+        /** @type {FtpFile} */
+
+        if (file.isSymLink) {
+            ftp.ls(file.fullPath, function (err, data) {
+                if (err || data.length != 1) {
+                    cosole.log("Error getting data for", file.fullPath);
+                    return;
+                }
+
+
+
+
+                console.log("Got target data", data[0]);
+                file.setTargetData(data[0]);
+            });
+        }
+    }
+}
+
 /**
  *
  * @param data - { transfered, total, filename, action (get/put) }
  */
 function ftpProgressUpdate(data) {
     //console.log('Transferred ' + data.transferred + 'bytes of ' + data.total);
-    console.log('Progress', data);
+    //console.log('Progress', data);
 
     /**  @type {FtpFile} file **/
     let file;
