@@ -10,6 +10,7 @@ function FtpFile(basePath, relativePath, ftpData) {
     const _basePath = basePath;
     const _relativePath = relativePath;
     const _data = ftpData;
+    let _targetData;
 
     //TODO: Convert this to a timestamp? Maybe.
     this._timestamp = _data.time;
@@ -26,15 +27,22 @@ function FtpFile(basePath, relativePath, ftpData) {
             : FtpFile.appendSlash(_basePath) + FtpFile.appendSlash(_relativePath) + _data.name
     });
 
-    Object.defineProperty(this, 'transferred', { writable: true } );
+    Object.defineProperty(this, 'transferred', { writable: true, value: 0 } );
+
+    Object.defineProperty(this, 'isSymLink', { value: _data.type == 2});
+
+    this.setTargetData = function (data) {
+        _targetData = data;
+    };
 
     this.json = function () {
+        console.log("target data", _data.name, _targetData ? _targetData.size : _data.size);
         return {
             "filename": _data.name,
             "source_root": "/home/odie/deluge-scripts/toUpload",
             "dest_root": "~/microverse/library/seedbox",
             "path": _relativePath,
-            "size": _data.size,
+            "size": _targetData ? _targetData.size : _data.size,
             "downloaded": this.transferred,
             "download_rate": this.transferred > 0 ? 56.3 : 0,
             "status": this.transferred > 0 ? "downloading" : "queued",

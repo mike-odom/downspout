@@ -2,7 +2,7 @@
 <div id="vueApp">
   <div class="downloads">
     <div v-if="downloads.length > 0" v-for="download in sortedDownloads" class="item" v-bind:class="download.status">
-      <header>${download.path}/${download.file_name}</header>
+      <header>${download.path}/${download.filename}</header>
       <div class="transferInfo">
         <progress-bar v-bind:download="download"></progress-bar>
       </div>
