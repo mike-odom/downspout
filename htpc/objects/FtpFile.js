@@ -31,6 +31,8 @@ function FtpFile(basePath, relativePath, ftpData) {
 
     Object.defineProperty(this, 'isSymLink', { value: _data.type == 2});
 
+    Object.defineProperty(this, 'downloading', { value: false });
+
     this.setTargetData = function (data) {
         _targetData = data;
     };
@@ -45,7 +47,7 @@ function FtpFile(basePath, relativePath, ftpData) {
             "size": _targetData ? _targetData.size : _data.size,
             "downloaded": this.transferred,
             "download_rate": this.transferred > 0 ? 56.3 : 0,
-            "status": this.transferred > 0 ? "downloading" : "queued",
+            "status": this.downloading > 0 ? "downloading" : "queued",
             "date_added": _data.time,
             "uid": "Some unique identifier string per row"
         }
