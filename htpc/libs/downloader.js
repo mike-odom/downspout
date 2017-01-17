@@ -72,7 +72,10 @@ function fakeLSR(path, callback) {
 
 }
 
+/** @type {FtpFile[]} */
 let downloadQueue = [];
+
+/** @type {FtpFile[]} */
 let completedList = [];
 
 function JSFtpDownload(completedCallback) {
@@ -104,13 +107,36 @@ function JSFtpDownload(completedCallback) {
     });
 }
 
+
+function getNextFileToDownload() {
+    for (let file of downloadQueue) {
+        if (!file.downloading) {
+            return file;
+        }
+    }
+}
+
+/**
+ * @param ftpFile {FtpFile}
+ * @param queue {FtpFile[]}
+ */
+function removeFileFromQueue(ftpFile, queue) {
+    for (let t = 0; t < queue.length; t++) {
+        if (queue[t] == ftpFile) {
+            queue.splice(t, 1);
+        }
+    }
+}
+
 function downloadNextInQueue() {
-    if (!downloadQueue.length) {
+    let file = getNextFileToDownload();
+
+    if (!file && !downloadQueue.length) {
         downloadCompleteCallback();
         return;
     }
 
-    let file = downloadQueue[downloadQueue.length - 1];
+    file.downloading = true;
 
     let localDirectory = FtpFile.appendSlash(config.localSyncFolder) + file.fullRelativePath;
 
@@ -141,7 +167,8 @@ function downloadNextInQueue() {
             //TODO: Delete __seedbox_sync_folder__ file
             //TODO: Tell media server that files have been updated. If we've finished a section.
 
-            downloadQueue.pop();
+            //Done, remove from queue.
+            removeFileFromQueue(file, downloadQueue);
 
             completedList.push(file);
 
