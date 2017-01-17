@@ -4,13 +4,11 @@ const fakeData = require('../fakeData.js');
 const FtpFile = require('../objects/FtpFile.js');
 const mkdirp = require('mkdirp');
 
-const downloader = {
-    downloading: false
+const Downloader = module.exports = function () {
+    this.downloading = false;
 };
 
 const ftpConfig = config.seedboxFTP;
-
-const ftp = newJSFTP();
 
 function newJSFTP() {
     return new JSFtp({
@@ -21,17 +19,17 @@ function newJSFTP() {
     });
 }
 
-downloader.sync = function () {
-    if (downloader.downloading) {
+Downloader.sync = function () {
+    if (this.downloading) {
         return;
     }
 
-    downloader.downloading = true;
+    this.downloading = true;
 
     JSFtpDownload(downloadCompleteCallback);
 };
 
-downloader.status = function() {
+Downloader.status = function() {
     /*let result = "Downloaded: ";
     for (let file of completedList) {
         result += file.fullRelativePath + '\n';
@@ -60,7 +58,7 @@ downloader.status = function() {
 };
 
 function downloadCompleteCallback() {
-    downloader.downloading = false;
+    Downloader.downloading = false;
 
     console.log("Downloading completed");
 }
@@ -78,11 +76,14 @@ let downloadQueue = [];
 /** @type {FtpFile[]} */
 let completedList = [];
 
+/** @type {JSFtp[]} */
+let ftpConnectionPool = [];
+
 function JSFtpDownload(completedCallback) {
     let syncFolder = config.seedboxFTP.syncRoot;
 
-    //fakeLSR
-    //ftp.lsr
+    const ftp = newJSFTP();
+
     ftp.lsr(syncFolder, function (err, data) {
         if (err) {
             console.log(err);
@@ -93,7 +94,7 @@ function JSFtpDownload(completedCallback) {
         //TODO: Flatten out this list and group folders with __seedbox_sync_folder__ files in them
         downloadQueue = processFilesJSON(data, syncFolder, 20);
 
-        updateFileSizes(downloadQueue);
+        updateFileSizes(ftp, downloadQueue);
 
         //TODO: Sort each group's contents by date
         downloadQueue.sort(FtpFile.sortNewestFirst);
@@ -107,13 +108,37 @@ function JSFtpDownload(completedCallback) {
     });
 }
 
+function ftpForDownloading() {
+    let ftp = ftpConnectionPool.pop() || newJSFTP();
+
+    ftp.on('progress', ftpProgressUpdate);
+
+    return ftp;
+}
+
+function doneWithFtpObj(ftp) {
+    ftpConnectionPool.push(ftp);
+}
 
 function getNextFileToDownload() {
+    let downloadingCount = 0;
+    let nextFile = null;
+
     for (let file of downloadQueue) {
         if (!file.downloading) {
-            return file;
+            if (nextFile == null) {
+                nextFile = file;
+            }
+        } else {
+            downloadingCount++;
         }
     }
+
+    if (downloadingCount < config.downloads.countMax) {
+        return nextFile;
+    }
+
+    return null;
 }
 
 /**
@@ -131,8 +156,10 @@ function removeFileFromQueue(ftpFile, queue) {
 function downloadNextInQueue() {
     let file = getNextFileToDownload();
 
-    if (!file && !downloadQueue.length) {
-        downloadCompleteCallback();
+    if (!file) {
+        if (!downloadQueue.length) {
+            downloadCompleteCallback();
+        }
         return;
     }
 
@@ -152,7 +179,7 @@ function downloadNextInQueue() {
 
     //TODO: Change this to use streams so we know the file download status.
 
-    ftp.on('progress', ftpProgressUpdate);
+    let ftp = ftpForDownloading();
 
     console.log("Downloading", file.fullPath);
     ftp.get(file.fullPath, localPath, function(err) {
@@ -172,9 +199,13 @@ function downloadNextInQueue() {
 
             completedList.push(file);
 
+            doneWithFtpObj(ftp);
+
             downloadNextInQueue();
         }
     });
+
+    downloadNextInQueue();
 }
 
 const FTP_TYPE_FILE = 0;
@@ -216,7 +247,7 @@ function processFilesJSON(data, basePath, depth = 20, relativePath = "", outList
     return outList;
 }
 
-function updateFileSizes(list) {
+function updateFileSizes(ftp, list) {
     for (let file of list) {
         /** @type {FtpFile} */
 
@@ -257,5 +288,3 @@ function ftpProgressUpdate(data) {
     }
 
 }
-
-module.exports = downloader;

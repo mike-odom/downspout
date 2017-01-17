@@ -31,14 +31,13 @@ function FtpFile(basePath, relativePath, ftpData) {
 
     Object.defineProperty(this, 'isSymLink', { value: _data.type == 2});
 
-    Object.defineProperty(this, 'downloading', { value: false });
+    Object.defineProperty(this, 'downloading', { writable: true, value: false });
 
     this.setTargetData = function (data) {
         _targetData = data;
     };
 
     this.json = function () {
-        console.log("target data", _data.name, _targetData ? _targetData.size : _data.size);
         return {
             "filename": _data.name,
             "source_root": "/home/odie/deluge-scripts/toUpload",
