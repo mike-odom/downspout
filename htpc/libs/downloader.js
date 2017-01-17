@@ -10,7 +10,10 @@ const Downloader = module.exports = function () {
 
 const ftpConfig = config.seedboxFTP;
 
-function newJSFTP() {
+/**
+ * Create a new JSFtp instance with our config info
+ */
+function newJSFtp() {
     return new JSFtp({
         host: ftpConfig.host,
         port: ftpConfig.port, // defaults to 21
@@ -26,7 +29,7 @@ Downloader.sync = function () {
 
     this.downloading = true;
 
-    JSFtpDownload(downloadCompleteCallback);
+    startSync(downloadCompleteCallback);
 };
 
 Downloader.status = function() {
@@ -79,10 +82,15 @@ let completedList = [];
 /** @type {JSFtp[]} */
 let ftpConnectionPool = [];
 
-function JSFtpDownload(completedCallback) {
+/**
+ * Looks at the files in the remote server and starts the download process
+ *
+ * @param completedCallback
+ */
+function startSync(completedCallback) {
     let syncFolder = config.seedboxFTP.syncRoot;
 
-    const ftp = newJSFTP();
+    const ftp = newJSFtp();
 
     ftp.lsr(syncFolder, function (err, data) {
         if (err) {
@@ -108,18 +116,34 @@ function JSFtpDownload(completedCallback) {
     });
 }
 
+/**
+ * Creates a new JSFtp instance or pulls one from a connection pool
+ *
+ * @returns {JSFtp}
+ */
 function ftpForDownloading() {
-    let ftp = ftpConnectionPool.pop() || newJSFTP();
+    let ftp = ftpConnectionPool.pop() || newJSFtp();
 
     ftp.on('progress', ftpProgressUpdate);
 
     return ftp;
 }
 
+/**
+ * Done with this FTP object, put it back in the pool
+ *
+ * @param ftp {JSFtp}
+ */
 function doneWithFtpObj(ftp) {
     ftpConnectionPool.push(ftp);
 }
 
+/**
+ * Returns a file if there is one ready to download
+ * This function is limited by how many free ftp connections there are
+ *
+ * @returns {FtpFile|null}
+ */
 function getNextFileToDownload() {
     let downloadingCount = 0;
     let nextFile = null;
@@ -142,6 +166,8 @@ function getNextFileToDownload() {
 }
 
 /**
+ * An item has been successfully downloaded, remove it from the queue
+ *
  * @param ftpFile {FtpFile}
  * @param queue {FtpFile[]}
  */
@@ -153,6 +179,9 @@ function removeFileFromQueue(ftpFile, queue) {
     }
 }
 
+/**
+ * Download another item in the queue if it exists
+ */
 function downloadNextInQueue() {
     let file = getNextFileToDownload();
 
@@ -247,6 +276,12 @@ function processFilesJSON(data, basePath, depth = 20, relativePath = "", outList
     return outList;
 }
 
+/**
+ * The recursive directory search only gives us symlinks. We need to see how big the actual files are one by one.
+ *
+ * @param ftp
+ * @param list
+ */
 function updateFileSizes(ftp, list) {
     for (let file of list) {
         /** @type {FtpFile} */
@@ -257,9 +292,6 @@ function updateFileSizes(ftp, list) {
                     cosole.log("Error getting data for", file.fullPath);
                     return;
                 }
-
-
-
 
                 console.log("Got target data", data[0]);
                 file.setTargetData(data[0]);
