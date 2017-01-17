@@ -14,4 +14,7 @@ config.downloads = {
     speedMax: 300000
 };
 
+//You'll normally want to keep this to true, this is for testing purposes only.
+config.deleteRemoteFiles = true;
+
 module.exports = config;

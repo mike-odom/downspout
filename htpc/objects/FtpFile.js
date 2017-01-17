@@ -24,7 +24,7 @@ function FtpFile(basePath, relativePath, ftpData) {
         value: (_data.hasOwnProperty("target")) ?
             //Use target if it's a symlink
             FtpFile.appendSlash(_basePath) + FtpFile.appendSlash(_relativePath) + _data.target
-            : FtpFile.appendSlash(_basePath) + FtpFile.appendSlash(_relativePath) + _data.name
+            : this.actualPath
     });
 
     Object.defineProperty(this, 'transferred', { writable: true, value: 0 } );
@@ -32,6 +32,8 @@ function FtpFile(basePath, relativePath, ftpData) {
     Object.defineProperty(this, 'isSymLink', { value: _data.type == 2});
 
     Object.defineProperty(this, 'downloading', { writable: true, value: false });
+
+    Object.defineProperty(this, 'actualPath', { value: FtpFile.appendSlash(_basePath) + FtpFile.appendSlash(_relativePath) + _data.name });
 
     this.setTargetData = function (data) {
         _targetData = data;

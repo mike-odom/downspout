@@ -4,11 +4,22 @@ const fakeData = require('../fakeData.js');
 const FtpFile = require('../objects/FtpFile.js');
 const mkdirp = require('mkdirp');
 
+const ftpConfig = config.seedboxFTP;
+
 const Downloader = module.exports = function () {
     this.downloading = false;
 };
 
-const ftpConfig = config.seedboxFTP;
+/** @type {FtpFile[]} */
+let downloadQueue = [];
+
+/** @type {FtpFile[]} */
+let completedList = [];
+
+/** @type {JSFtp[]} */
+let ftpConnectionPool = [];
+
+let commandFtp = newJSFtp();
 
 /**
  * Create a new JSFtp instance with our config info
@@ -73,15 +84,6 @@ function fakeLSR(path, callback) {
 
 }
 
-/** @type {FtpFile[]} */
-let downloadQueue = [];
-
-/** @type {FtpFile[]} */
-let completedList = [];
-
-/** @type {JSFtp[]} */
-let ftpConnectionPool = [];
-
 /**
  * Looks at the files in the remote server and starts the download process
  *
@@ -90,9 +92,7 @@ let ftpConnectionPool = [];
 function startSync(completedCallback) {
     let syncFolder = config.seedboxFTP.syncRoot;
 
-    const ftp = newJSFtp();
-
-    ftp.lsr(syncFolder, function (err, data) {
+    commandFtp.lsr(syncFolder, function (err, data) {
         if (err) {
             console.log(err);
             return;
@@ -102,7 +102,7 @@ function startSync(completedCallback) {
         //TODO: Flatten out this list and group folders with __seedbox_sync_folder__ files in them
         downloadQueue = processFilesJSON(data, syncFolder, 20);
 
-        updateFileSizes(ftp, downloadQueue);
+        updateFileSizes(commandFtp, downloadQueue);
 
         //TODO: Sort each group's contents by date
         downloadQueue.sort(FtpFile.sortNewestFirst);
@@ -217,8 +217,17 @@ function downloadNextInQueue() {
         } else {
             console.log("File downloaded succesfully", localPath);
 
-            //TODO: Delete the symlink on the server
-            //ftp.delete()
+            if (config.deleteRemoteFiles) {
+                //Delete the symlink on the server
+                commandFtp.raw("dele " + file.actualPath, function (err) {
+                    if (err) {
+                        console.log("Error deleting file", err);
+                    } else {
+                        console.log("Deleted symlink", file.actualPath);
+                    }
+
+                });
+            }
 
             //TODO: Delete __seedbox_sync_folder__ file
             //TODO: Tell media server that files have been updated. If we've finished a section.
