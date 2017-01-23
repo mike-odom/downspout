@@ -19,8 +19,6 @@ let completedList = [];
 /** @type {JSFtp[]} */
 let ftpConnectionPool = [];
 
-let commandFtp = newJSFtp();
-
 /**
  * Create a new JSFtp instance with our config info
  */
@@ -52,9 +50,7 @@ Downloader.status = function() {
 
     let downloads = [];
 
-    /** @type {FtpFile} */
-    let file;
-    for (file of downloadQueue) {
+    for (let file of downloadQueue) {
         downloads.push(file.json());
     }
 
@@ -77,22 +73,23 @@ function downloadCompleteCallback() {
     console.log("Downloading completed");
 }
 
-function fakeLSR(path, callback) {
-    let data = fakeData.twoFiles();
-
-    callback(null, data);
-
-}
+// function fakeLSR(path, callback) {
+//     let data = fakeData.twoFiles();
+//
+//     callback(null, data);
+//
+// }
 
 /**
  * Looks at the files in the remote server and starts the download process
  *
- * @param completedCallback
  */
-function startSync(completedCallback) {
+function startSync() {
     let syncFolder = config.seedboxFTP.syncRoot;
 
-    commandFtp.lsr(syncFolder, function (err, data) {
+    let ftp = newJSFtp();
+
+    ftp.lsr(syncFolder, function (err, data) {
         if (err) {
             console.log(err);
             return;
@@ -102,7 +99,7 @@ function startSync(completedCallback) {
         //TODO: Flatten out this list and group folders with __seedbox_sync_folder__ files in them
         downloadQueue = processFilesJSON(data, syncFolder, 20);
 
-        updateFileSizes(commandFtp, downloadQueue);
+        updateFileSizes(ftp, downloadQueue);
 
         //TODO: Sort each group's contents by date
         downloadQueue.sort(FtpFile.sortNewestFirst);
@@ -219,9 +216,10 @@ function downloadNextInQueue() {
 
             if (config.deleteRemoteFiles) {
                 //Delete the symlink on the server
-                commandFtp.raw("dele " + file.actualPath, function (err) {
+                let deleteFtp = newJSFtp();
+                deleteFtp.raw("dele " + file.actualPath, function (err) {
                     if (err) {
-                        console.log("Error deleting file", err);
+                        console.log("Error deleting file", file.actualPath, err);
                     } else {
                         console.log("Deleted symlink", file.actualPath);
                     }
@@ -246,7 +244,7 @@ function downloadNextInQueue() {
     downloadNextInQueue();
 }
 
-const FTP_TYPE_FILE = 0;
+//const FTP_TYPE_FILE = 0;
 const FTP_TYPE_DIRECTORY = 1;
 const FTP_TYPE_SYM_LINK = 2;
 
@@ -310,16 +308,11 @@ function updateFileSizes(ftp, list) {
 }
 
 /**
+ * Callback from jsftp to let us know file download progress
  *
  * @param data - { transfered, total, filename, action (get/put) }
  */
 function ftpProgressUpdate(data) {
-    //console.log('Transferred ' + data.transferred + 'bytes of ' + data.total);
-    //console.log('Progress', data);
-
-    /**  @type {FtpFile} file **/
-    let file;
-
     for (file of downloadQueue) {
         if (file.fullPath == data.filename) {
             file.transferred = data.transferred;
