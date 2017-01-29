@@ -109,9 +109,9 @@ app.use(function (err, req, res, next) {
     res.render('error');
 });
 
-//Ghetto for now, don't try to sync if no password is setup yet.
+//Ghetto for now, don't try to syncRequest if no password is setup yet.
 if (config.seedboxFTP.password != "[Somepassword]") {
-    downloader.sync();
+    downloader.syncRequest();
 }
 
 module.exports = app;
