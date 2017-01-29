@@ -25,9 +25,9 @@ let ftpConnectionPool = [];
 function newJSFtp() {
     return new JSFtp({
         host: ftpConfig.host,
-        port: ftpConfig.port, // defaults to 21
-        user: ftpConfig.user, // defaults to "anonymous"
-        pass: ftpConfig.password // defaults to "@anonymous"
+        port: ftpConfig.port || 21,
+        user: ftpConfig.user || "anonymous",
+        pass: ftpConfig.password || "@anonymous"
     });
 }
 
