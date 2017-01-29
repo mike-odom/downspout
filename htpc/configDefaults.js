@@ -4,7 +4,8 @@ config.seedboxFTP = {
     host: "localhost",
     user: "[Default]",
     password: "[Somepassword]",
-    syncRoot: "/baseMediaFolder"
+    syncRoot: "/baseMediaFolder",
+    port: 21
 };
 
 config.localSyncFolder = "~/somePath";
