@@ -6,9 +6,17 @@ const mkdirp = require('mkdirp');
 
 const ftpConfig = config.seedboxFTP;
 
-const Downloader = module.exports = function () {
-    this.downloading = false;
+const Downloader = function () {
+
 };
+
+/**
+ * Pivate variables
+ */
+
+let downloading = false;
+let syncRequested = false;
+let lastRunHadStuffToDownload = false;
 
 /** @type {FtpFile[]} */
 let downloadQueue = [];
@@ -31,17 +39,20 @@ function newJSFtp() {
     });
 }
 
-Downloader.sync = function () {
-    if (this.downloading) {
+Downloader.prototype.syncRequest = function () {
+    if (downloading) {
+        // A sync was requested during our download,
+        // this will attempt to run again with fresh FTP folder info.
+        syncRequested = true;
         return;
     }
 
-    this.downloading = true;
+    downloading = true;
 
     startSync();
 };
 
-Downloader.status = function() {
+Downloader.prototype.status = function() {
     /*let result = "Downloaded: ";
     for (let file of completedList) {
         result += file.fullRelativePath + '\n';
@@ -68,9 +79,14 @@ Downloader.status = function() {
 };
 
 function downloadCompleteCallback() {
-    Downloader.downloading = false;
+    downloading = false;
+
 
     console.log("Downloading completed");
+
+    if (lastRunHadStuffToDownload || syncRequested) {
+        startSync();
+    }
 }
 
 // function fakeLSR(path, callback) {
@@ -322,3 +338,6 @@ function ftpProgressUpdate(data) {
     }
 
 }
+
+
+module.exports = new Downloader();

@@ -5,15 +5,11 @@ const router = express.Router();
 
 const downloader = require('../libs/downloader');
 
-/* GET home page. */
+/**
+ * New download completed on the seedbox.
+ * Parse info and start downloading process if not already running.
+ */
 router.post('/', bodyParser.json(), function (req, res, next) {
-    //downloader.seedboxCallback();
-
-    res.json(req.body);
-    //res.send("Sync initiated");
-
-    downloader.sync();
-
     /**
      req.body will be in the form of
      {
@@ -24,6 +20,19 @@ router.post('/', bodyParser.json(), function (req, res, next) {
         }
     }
      */
+
+    res.json(req.body);
+
+    downloader.syncRequest();
+});
+
+/**
+ * Debug URL so I can curl this
+ */
+router.get('/', function (req, res, next) {
+    res.json([]);
+
+    downloader.syncRequest();
 });
 
 module.exports = router;
