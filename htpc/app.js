@@ -1,7 +1,7 @@
 const express = require('express');
 const exphbs = require('express-handlebars');
 const path = require('path');
-let favicon = require('serve-favicon');
+const favicon = require('serve-favicon');
 const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
@@ -16,6 +16,59 @@ const seedboxCallback = require('./routes/seedboxCallback');
 const status = require('./routes/status');
 
 const config = require('./config');
+
+if ("testFtpServer" in config) {
+    const ftpd = require('ftpd');
+
+    //override our settings if the test server is going to be up
+    config.seedboxFTP.host = "127.0.0.1";
+    config.seedboxFTP.user = config.testFtpServer.user;
+    config.seedboxFTP.password = config.testFtpServer.password;
+
+    // // Path to your FTP root
+    // ftpd.fsOptions.root = config.testFtpServer.root;
+    //
+    // // Start listening on port 21 (you need to be root for ports < 1024)
+    // ftpd.listen(21);
+
+    server = new ftpd.FtpServer("127.0.0.1", {
+        getInitialCwd: function () {
+            return '/';
+        },
+        getRoot: function () {
+            return process.cwd() + "\\" + config.testFtpServer.localRoot;
+        }
+    });
+
+    server.on('error', function(error) {
+        console.log('FTP Server error:', error);
+    });
+
+    server.on('client:connected', function(connection) {
+        let username = null;
+        console.log('client connected: ' + connection.remoteAddress);
+        connection.on('command:user', function(user, success, failure) {
+            if (user) {
+                username = user;
+                success();
+            } else {
+                failure();
+            }
+        });
+
+        connection.on('command:pass', function(pass, success, failure) {
+            if (pass) {
+                success(username);
+            } else {
+                failure();
+            }
+        });
+    });
+
+    server.debugging = 4;
+    server.listen(21);
+}
+
 const downloader = require('./libs/downloader');
 
 // view engine setup

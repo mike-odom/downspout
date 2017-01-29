@@ -244,7 +244,7 @@ function downloadNextInQueue() {
     downloadNextInQueue();
 }
 
-//const FTP_TYPE_FILE = 0;
+const FTP_TYPE_FILE = 0;
 const FTP_TYPE_DIRECTORY = 1;
 const FTP_TYPE_SYM_LINK = 2;
 
@@ -267,8 +267,8 @@ function processFilesJSON(data, basePath, depth = 20, relativePath = "", outList
         return;
     }
     for (let file of data) {
-        //Only transfer symlinks
-        if (file.type == FTP_TYPE_SYM_LINK) {
+        //Only transfer symlinks, or if running the test server, all files
+        if (file.type == FTP_TYPE_SYM_LINK || (config.testFtpServer && file.type == FTP_TYPE_FILE)) {
             console.log(relativePath + file.name);
             let fileObj = new FtpFile(basePath, relativePath, file);
             outList.push(fileObj);
