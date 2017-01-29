@@ -38,7 +38,7 @@ Downloader.sync = function () {
 
     this.downloading = true;
 
-    startSync(downloadCompleteCallback);
+    startSync();
 };
 
 Downloader.status = function() {
@@ -219,7 +219,7 @@ function downloadNextInQueue() {
                 let deleteFtp = newJSFtp();
                 deleteFtp.raw("dele " + file.actualPath, function (err) {
                     if (err) {
-                        console.log("Error deleting file", file.actualPath, err);
+                        console.error("Error deleting file, make sure you have proper permissions", file.actualPath, err);
                     } else {
                         console.log("Deleted symlink", file.actualPath);
                     }
