@@ -19,6 +19,7 @@
     "serve-favicon": "~2.3.0",
     "upath": "^0.2.0",
     "ftp-server": "latest",
-    "ftpd": "latest"
+    "ftpd": "latest",
+    "mongoose": "latest"
   }
 }

@@ -3,6 +3,8 @@ const config = require('../config.js');
 const fakeData = require('../fakeData.js');
 const FtpFile = require('../objects/FtpFile.js');
 const mkdirp = require('mkdirp');
+const mongoose = require('mongoose');
+const SyncLogItem = require('../objects/SyncLogItem');
 
 const ftpConfig = config.seedboxFTP;
 
@@ -26,6 +28,12 @@ let completedList = [];
 
 /** @type {JSFtp[]} */
 let ftpConnectionPool = [];
+
+// mongoose.connect('mongodb://localhost/seedboxsync');
+//
+// var logItem = new SyncLogItem();
+// logItem.localPath = "asdf";
+// logItem.save();
 
 /**
  * Create a new JSFtp instance with our config info
