@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 const logger = require('./libs/logger');
 
@@ -15,7 +15,7 @@ const bodyParser = require('body-parser');
 
 const app = express();
 
-const config = require('./config');
+const config = require('./../../config');
 
 const index = require('./routes/index');
 const users = require('./routes/users');

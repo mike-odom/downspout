@@ -2,12 +2,12 @@ import * as winston from 'winston';
 
 //import winston = require('winston');
 const JSFtp = require('./jsftp-lsr')(require("jsftp"));
-const config = require('../config');
-const fakeData = require('../fakeData');
+const config = require('../../../config');
+const fakeData = require('../../../fakeData');
 const FtpFile = require('../objects/FtpFile');
 import mkdirp = require('mkdirp');
 import mongoose = require('mongoose');
-const SyncLogItem = require('../objects/SyncLogItem');
+const SyncLogItem = require('./../objects/SyncLogItem');
 
 const ftpConfig = config.seedboxFTP;
 
