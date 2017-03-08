@@ -4,7 +4,7 @@
  * Module dependencies.
  */
 
-const app = require('../app');
+const app = require('../appd');
 
 //var app = require('../app');
 var debug = require('debug')('seedboxsync:server');
