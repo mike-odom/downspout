@@ -1,9 +1,10 @@
-import * as winston from 'winston';
+import * as winston from "winston";
+
+const logger : winston.LoggerInstance = require('./logger');
 
 //import winston = require('winston');
 const JSFtp = require('./jsftp-lsr')(require("jsftp"));
 const config = require('../../../config');
-const fakeData = require('../../../fakeData');
 const FtpFile = require('../objects/FtpFile');
 import mkdirp = require('mkdirp');
 import mongoose = require('mongoose');
@@ -15,8 +16,9 @@ const Downloader = function () {
 
 };
 
-winston.debug("debug in downloader");
-winston.info("Hmmm");
+logger.debug("debug in downloader");
+logger.info("Hmmm");
+
 /**
  * Pivate variables
  */
@@ -87,8 +89,6 @@ Downloader.prototype.status = function() {
         },
         "downloads": downloads
     };
-
-    //return fakeData.statusPage();
 };
 
 function downloadCompleteCallback() {
@@ -101,13 +101,6 @@ function downloadCompleteCallback() {
         startSync();
     }
 }
-
-// function fakeLSR(path, callback) {
-//     let data = fakeData.twoFiles();
-//
-//     callback(null, data);
-//
-// }
 
 /**
  * Looks at the files in the remote server and starts the download process
