@@ -1,7 +1,7 @@
-var express = require('express');
-var router = express.Router();
+import express = require('express');
+const router = express.Router();
 
-var downloader = require('../libs/downloader');
+const downloader = require('../libs/downloader');
 
 /* GET home page. */
 router.get('/', function (req, res, next) {

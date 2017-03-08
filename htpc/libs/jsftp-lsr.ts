@@ -34,7 +34,8 @@ function lsr(root, callback) {
 
     var result = [{
         type: FTP_DIR_TYPE,
-        name: "."
+        name: ".",
+        children: []
     }];
     var currentDirectory = result[0];
     async.doWhilst(

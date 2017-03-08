@@ -20,13 +20,15 @@ var logger = new (winston.Logger)({
                 filename: 'all-logs.log',
                 timestamp: true,
                 maxsize: 1000000,
-                handleExceptions: true}),
+                handleExceptions: true,
+                humanReadableUnhandledException: true}),
         new winston.transports.Console(
             {
                 level: 'debug',
                 colorize: true,
                 timestamp: true,
-                handleExceptions: true
+                handleExceptions: true,
+                humanReadableUnhandledException: true
             })
     ],
     exitOnError: false, // <--- set this to false
