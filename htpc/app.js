@@ -1,8 +1,10 @@
+const logger = require('./libs/logger');
+
 const express = require('express');
 const exphbs = require('express-handlebars');
 const path = require('path');
 const favicon = require('serve-favicon');
-const logger = require('morgan');
+const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 
@@ -41,12 +43,12 @@ if ("testFtpServer" in config) {
     });
 
     server.on('error', function(error) {
-        console.log('FTP Server error:', error);
+        logger.error('FTP Server error:', error);
     });
 
     server.on('client:connected', function(connection) {
         let username = null;
-        console.log('client connected: ' + connection.remoteAddress);
+        logger.info('client connected: ' + connection.remoteAddress);
         connection.on('command:user', function(user, success, failure) {
             if (user) {
                 username = user;
@@ -78,7 +80,7 @@ app.set('view engine', 'handlebars');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-app.use(logger('dev'));
+app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());

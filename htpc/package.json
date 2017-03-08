@@ -20,6 +20,7 @@
     "upath": "^0.2.0",
     "ftp-server": "latest",
     "ftpd": "latest",
-    "mongoose": "latest"
+    "mongoose": "latest",
+    "winston": "latest"
   }
 }

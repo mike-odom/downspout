@@ -1,6 +1,8 @@
 # This is per server config
 config.js
 
+*.log
+
 # JetBrains IDE user settings
 .idea
 
