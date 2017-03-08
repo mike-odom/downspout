@@ -1,3 +1,4 @@
+var winston = require('winston');
 const JSFtp = require('./jsftp-lsr')(require("jsftp"));
 const config = require('../config.js');
 const fakeData = require('../fakeData.js');
@@ -12,6 +13,8 @@ const Downloader = function () {
 
 };
 
+winston.debug("debug in downloader");
+winston.info("Hmmm");
 /**
  * Pivate variables
  */
