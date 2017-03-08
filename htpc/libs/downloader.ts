@@ -1,10 +1,12 @@
-var winston = require('winston');
+import * as winston from 'winston';
+
+//import winston = require('winston');
 const JSFtp = require('./jsftp-lsr')(require("jsftp"));
-const config = require('../config.js');
-const fakeData = require('../fakeData.js');
-const FtpFile = require('../objects/FtpFile.js');
-const mkdirp = require('mkdirp');
-const mongoose = require('mongoose');
+const config = require('../config');
+const fakeData = require('../fakeData');
+const FtpFile = require('../objects/FtpFile');
+import mkdirp = require('mkdirp');
+import mongoose = require('mongoose');
 const SyncLogItem = require('../objects/SyncLogItem');
 
 const ftpConfig = config.seedboxFTP;
@@ -323,7 +325,7 @@ function updateFileSizes(ftp, list) {
         if (file.isSymLink) {
             ftp.ls(file.fullPath, function (err, data) {
                 if (err || data.length != 1) {
-                    cosole.log("Error getting data for", file.fullPath);
+                    winston.log("Error getting data for", file.fullPath);
                     return;
                 }
 
@@ -340,7 +342,7 @@ function updateFileSizes(ftp, list) {
  * @param data - { transfered, total, filename, action (get/put) }
  */
 function ftpProgressUpdate(data) {
-    for (file of downloadQueue) {
+    for (let file of downloadQueue) {
         if (file.fullPath == data.filename) {
             file.transferred = data.transferred;
 

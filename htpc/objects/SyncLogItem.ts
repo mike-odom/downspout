@@ -1,5 +1,5 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+import mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
 /** @class SyncLogItem */
 let SyncLogItemSchema = new Schema({

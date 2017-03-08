@@ -1,6 +1,11 @@
+"use strict"
+
 const logger = require('./libs/logger');
 
-const express = require('express');
+import express = require('express');
+
+//import * as express from 'express';
+
 const exphbs = require('express-handlebars');
 const path = require('path');
 const favicon = require('serve-favicon');
@@ -10,14 +15,12 @@ const bodyParser = require('body-parser');
 
 const app = express();
 
-app.config = require('./config.js');
+const config = require('./config');
 
 const index = require('./routes/index');
 const users = require('./routes/users');
 const seedboxCallback = require('./routes/seedboxCallback');
 const status = require('./routes/status');
-
-const config = require('./config');
 
 if ("testFtpServer" in config) {
     const ftpd = require('ftpd');
@@ -33,7 +36,7 @@ if ("testFtpServer" in config) {
     // // Start listening on port 21 (you need to be root for ports < 1024)
     // ftpd.listen(21);
 
-    server = new ftpd.FtpServer("127.0.0.1", {
+    var server = new ftpd.FtpServer("127.0.0.1", {
         getInitialCwd: function () {
             return '/';
         },
@@ -91,10 +94,21 @@ app.use('/users', users);
 app.use('/seedboxCallback', seedboxCallback);
 app.use('/status', status);
 
+
+class HttpError extends Error {
+    status: number;
+
+    constructor(message, status) {
+        super(message);
+        this.message = message;
+        this.name = 'HttpError';
+        this.status = status;
+    }
+}
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
-    const err = new Error('Not Found');
-    err.status = 404;
+    const err = new HttpError('Not Found', 404);
+    
     next(err);
 });
 
