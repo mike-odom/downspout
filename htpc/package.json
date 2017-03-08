@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "startold": "node ./bin/www",
-    "start": "npm-run ts-node ./ts/src/bin/www.ts"
+    "start": "npm-run ts-node ./src/ts/bin/www.ts"
   },
   "dependencies": {
     "async": "latest",

@@ -5,7 +5,7 @@
     "noImplicitAny": false,
     "sourceMap": true,
     "inlineSources": true,
-    "rootDir": "ts/src",
+    "rootDir": "src/ts",
     "typeRoots": [
       "node_modules/@types"
     ]
