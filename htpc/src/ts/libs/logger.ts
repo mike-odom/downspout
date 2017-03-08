@@ -1,19 +1,6 @@
-var winston = require('winston');
+import * as winston from "winston";
 
-/**
- * @class logTemplate
- */
-var logTemplate = function() {
-    this.info = function() {
-        
-    }
-};
-
-/**
- * @constructor
- * @extends logTemplate
- */
-var logger = new (winston.Logger)({
+const logger : winston.LoggerInstance = new (winston.Logger)({
     transports: [
         new winston.transports.File(
             {
@@ -21,7 +8,8 @@ var logger = new (winston.Logger)({
                 timestamp: true,
                 maxsize: 1000000,
                 handleExceptions: true,
-                humanReadableUnhandledException: true}),
+                humanReadableUnhandledException: true
+            }),
         new winston.transports.Console(
             {
                 level: 'debug',
