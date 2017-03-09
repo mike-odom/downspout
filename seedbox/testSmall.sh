@@ -1,8 +1,10 @@
 #!/bin/bash
 
+source config.sh
+
 # Destroy everything, these were just symlinks and stuff anyways.
-rm -R ../toUpload/*
+rm -R toUpload/*
 
 # Folder with .avi and .srt
-./deluge.sh "TMNT" "TMNT" /microverse/library/SeedboxSync/testFiles/movies
-./deluge.sh "Small \"World\"" "Small World.avi" /microverse/library/SeedboxSync/testFiles/tv
+./deluge.sh "Small Movie" "SmallMovie.avi" ${baseMediaDir}/movies
+./deluge.sh "Small Show" "SmallShow.avi" ${baseMediaDir}/tv

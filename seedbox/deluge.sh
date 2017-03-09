@@ -143,17 +143,20 @@ else
         ln -s -r "$torrentPath" "$destLink"
 fi
 
-# Done creating sym links, let the seedbox know about this new data. This can fail, and that's ok.
-echo "Notifying sync server"
+if [ -z "$syncServer" ]; then
+    echo "No syncServer set in config. Not signalling server. Make sure to setup the server to poll the ftp"
+else
+    # Done creating sym links, let the seedbox know about this new data. This can fail, and that's ok.
+    echo "Notifying sync server"
 
-# helper function to use Python to encode json data
-json_escape () {
-    # TODO: Error if python isn't available for some reason and default to non-escaped
+    # helper function to use Python to encode json data
+    json_escape () {
+        # TODO: Error if python isn't available for some reason and default to non-escaped
 
-    printf '%s' "$1" | python -c 'import json,sys; print(json.dumps(sys.stdin.read()))'
-}
+        printf '%s' "$1" | python -c 'import json,sys; print(json.dumps(sys.stdin.read()))'
+    }
 
-json=$(cat << EOM
+    json=$(cat << EOM
 {
     "torrent": {
         "id": $(json_escape "${torrentId}"),
@@ -164,7 +167,8 @@ json=$(cat << EOM
 EOM
 )
 
-echo ${json} | curl -v -H "Accept: application/json" -H "Content-type: application/json" -X POST -d @-  ${syncServer}/seedboxCallback
+  echo ${json} | curl -v -H "Accept: application/json" -H "Content-type: application/json" -X POST -d @-  ${syncServer}/seedboxCallback
+  #content=$(wget ${syncServer}/seedboxCallback -O -)
+  #echo ${content}
 
-#content=$(wget ${syncServer}/seedboxCallback -O -)
-#echo ${content}
+fi
