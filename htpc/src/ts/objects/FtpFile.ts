@@ -1,4 +1,7 @@
 class FtpFile {
+    public FTP_TYPE_FILE = 0;
+    public FTP_TYPE_DIRECTORY = 1;
+    public FTP_TYPE_SYM_LINK = 2;
 
     private _basePath: string;
     private _relativePath: string;

@@ -1,4 +1,5 @@
-const logger = require('./libs/logger');
+import winston = require('winston');
+const logger : winston.LoggerInstance = require('./libs/logger');
 
 import express = require('express');
 
