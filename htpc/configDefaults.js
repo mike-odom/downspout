@@ -35,7 +35,7 @@ config.downloads = {
 /**
  * The seedbox script creates symlinks. This deletes those symlinks.
  *
- * You'll normally want to keep this to true, this is for testing purposes only.
+ * You'll normally want to keep this to true, this is for setup & testing purposes only.
  *
  * @type {boolean}
  */
