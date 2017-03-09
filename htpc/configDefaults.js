@@ -12,8 +12,17 @@ config.seedboxFTP = {
     user: "[Default]",
     password: "[Somepassword]",
     syncRoot: "/baseMediaFolder",
-    port: 21
+    port: 21,
+    pollingIntervalInMinutes: 1
 };
+
+/**
+ * The port that this server will listen to for the seedbox callback.
+ * Also used for viewing the status page
+ * 
+ * @type {number}
+ */
+config.port = 45532;
 
 /**
  * Where you are syncing to on the local machine

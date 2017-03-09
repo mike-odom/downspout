@@ -1,10 +1,6 @@
-"use strict";
-
 const logger = require('./libs/logger');
 
 import express = require('express');
-
-//import * as express from 'express';
 
 const exphbs = require('express-handlebars');
 const path = require('path');
@@ -36,7 +32,7 @@ if ("testFtpServer" in config) {
     // // Start listening on port 21 (you need to be root for ports < 1024)
     // ftpd.listen(21);
 
-    var server = new ftpd.FtpServer("127.0.0.1", {
+    const server = new ftpd.FtpServer("127.0.0.1", {
         getInitialCwd: function () {
             return '/';
         },
@@ -125,8 +121,10 @@ app.use(function (err, req, res, next) {
     res.render('error');
 });
 
+const configDefaults = require('../../configDefaults');
+
 //Ghetto for now, don't try to syncRequest if no password is setup yet.
-if (config.seedboxFTP.password != "[Somepassword]") {
+if (config.seedboxFTP.password != configDefaults.seedboxFTP.password) {
     downloader.syncRequest();
 }
 

@@ -15,9 +15,6 @@ const Downloader = function () {
 
 };
 
-logger.debug("debug in downloader");
-logger.info("Hmmm");
-
 /**
  * Pivate variables
  */
@@ -98,6 +95,8 @@ function downloadCompleteCallback() {
 
     if (lastRunHadStuffToDownload || syncRequested) {
         startSync();
+    } else {
+        //setTimeout(syncRequested(), config.seedboxFtp.pollingIntervalInMinutes)
     }
 }
 
