@@ -10,7 +10,7 @@ const app = require('../app');
 const debug = require('debug')('seedboxsync:server');
 const http = require('http');
 
-import * as winston from "winston";
+import winston = require('winston');
 const logger : winston.LoggerInstance = require('../libs/logger');
 
 const config = require('../../../config');

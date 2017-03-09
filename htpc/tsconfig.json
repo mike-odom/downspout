@@ -1,12 +1,16 @@
 {
   "compilerOptions": {
     "module": "CommonJS",
-    "target": "es5",
+    "target": "ES5",
     "alwaysStrict": true,
     "sourceMap": true,
     "rootDir": "src/ts",
+    "moduleResolution": "node",
     "typeRoots": [
       "node_modules/@types"
     ]
-  }
+  },
+  "exclude": [
+    "node_modules"
+  ]
 }
