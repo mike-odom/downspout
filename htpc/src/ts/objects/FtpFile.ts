@@ -37,6 +37,10 @@ class FtpFile {
         return this._transferred;
     }
 
+    set transferred(val: number) {
+        this._transferred = val;
+    }
+
     get name(): string {
         return this._data.name;
     }
@@ -47,6 +51,11 @@ class FtpFile {
 
     get downloading(): boolean {
         return this._downloading;
+    }
+
+    set downloading(val: boolean) {
+        this._downloading = val;
+
     }
 
     set targetData(data) {

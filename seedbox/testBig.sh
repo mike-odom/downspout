@@ -1,9 +1,10 @@
 #!/bin/bash
 
+source config.sh
+
 # Destroy everything, these were just symlinks and stuff anyways.
-rm -R ../toUpload/*
+rm -R toUpload/*
 
 # Folder with .avi and .srt
-./deluge.sh "Sausage Party" "Sausage Party" /microverse/library/SeedboxSync/testFiles/movies
-./deluge.sh "Brooklyn Nine-Nine - S01E02 - The Tagger" "Brooklyn Nine-Nine - S01E02 - The Tagger.mkv" /microverse/library/SeedboxSync/testFiles/tv
-./deluge.sh "South Park - 20x08 - Members Only" "South Park - 20x08 - Members Only.mkv" /microverse/library/SeedboxSync/testFiles/tv
+./deluge.sh "Big Movie" "BigMovie.avi" ${baseMediaDir}/movies
+./deluge.sh "Big Show" "BigShow.avi" ${baseMediaDir}/tv

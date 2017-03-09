@@ -2,7 +2,6 @@ import * as winston from "winston";
 
 const logger : winston.LoggerInstance = require('./logger');
 
-//import winston = require('winston');
 const JSFtp = require('./jsftp-lsr')(require("jsftp"));
 const config = require('../../../config');
 const FtpFile = require('../objects/FtpFile');
@@ -163,10 +162,10 @@ function doneWithFtpObj(ftp) {
  *
  * @returns {FtpFile|null}
  */
-function getNextFileToDownload() {
+function getNextFileToDownload() : FtpFile {
     let downloadingCount = 0;
     let nextFile = null;
-
+    
     for (let file of downloadQueue) {
         if (!file.downloading) {
             if (nextFile == null) {
@@ -290,7 +289,7 @@ function processFilesJSON(data, basePath, depth = 20, relativePath = "", outList
     }
     for (let file of data) {
         //Only transfer symlinks, or if running the test server, all files
-        if (file.type == FTP_TYPE_SYM_LINK || (config.testFtpServer && file.type == FTP_TYPE_FILE)) {
+        if (file.type == FTP_TYPE_SYM_LINK || (/*config.testFtpServer && */ file.type == FTP_TYPE_FILE)) {
             console.log(relativePath + file.name);
             let fileObj = new FtpFile(basePath, relativePath, file);
             outList.push(fileObj);
