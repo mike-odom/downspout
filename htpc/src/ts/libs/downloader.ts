@@ -9,7 +9,7 @@ import mkdirp = require('mkdirp');
 import mongoose = require('mongoose');
 const SyncLogItem = require('./../objects/SyncLogItem');
 
-const ftpConfig = config.seedboxFTP;
+const ftpConfig = config.seedboxFtp;
 
 class Downloader {
     private downloading = false;
@@ -21,6 +21,8 @@ class Downloader {
 
     /** @type {JSFtp[]} */
     private ftpConnectionPool = [];
+
+    private pollingTimeoutId = 0;
 
     /**
      * Create a new JSFtp instance with our config info
@@ -75,7 +77,7 @@ class Downloader {
         if (this.lastRunHadStuffToDownload || this.syncRequested) {
             this.startSync();
         } else {
-            //setTimeout(syncRequested(), config.seedboxFtp.pollingIntervalInMinutes)
+            this.pollingTimeoutId = setTimeout(this.syncRequest.bind(this), ftpConfig.pollingIntervalInSeconds)
         }
     }
 
@@ -84,7 +86,13 @@ class Downloader {
      *
      */
     private startSync() {
-        let syncFolder = config.seedboxFTP.syncRoot;
+        //Cancel any scheduled polling of the server. This will be reset when we're done with our process.
+        if (this.pollingTimeoutId) {
+            clearTimeout(this.pollingTimeoutId);
+            this.pollingTimeoutId = 0;
+        }
+
+        let syncFolder = config.seedboxFtp.syncRoot;
 
         let ftp = this.newJSFtp();
 
@@ -109,9 +117,9 @@ class Downloader {
 
             //Go Async
             this.downloadNextInQueue();
-        });
+        }.bind(this));
     }
-
+    
     /**
      * Creates a new JSFtp instance or pulls one from a connection pool
      *
@@ -120,7 +128,7 @@ class Downloader {
     private ftpForDownloading() {
         let ftp = this.ftpConnectionPool.pop() || this.newJSFtp();
 
-        ftp.on('progress', this.ftpProgressUpdate);
+        ftp.on('progress', this.ftpProgressUpdate.bind(this));
 
         return ftp;
     }
@@ -238,7 +246,7 @@ class Downloader {
 
                 this.downloadNextInQueue();
             }
-        });
+        }.bind(this));
 
         this.downloadNextInQueue();
     }
@@ -281,6 +289,8 @@ class Downloader {
     /**
      * The recursive directory search only gives us symlinks. We need to see how big the actual files are one by one.
      *
+     * This is fine to not block because it's only updating the file sizes to show on the UI and not any logic
+     *
      * @param ftp
      * @param list
      */
@@ -291,7 +301,7 @@ class Downloader {
             if (file.isSymLink) {
                 ftp.ls(file.fullPath, function (err, data) {
                     if (err || data.length != 1) {
-                        winston.log("Error getting data for", file.fullPath);
+                        logger.log("Error getting data for", file.fullPath);
                         return;
                     }
 

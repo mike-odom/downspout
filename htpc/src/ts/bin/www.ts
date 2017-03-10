@@ -14,7 +14,6 @@ import winston = require('winston');
 const logger : winston.LoggerInstance = require('../libs/logger');
 
 const config = require('../../../config');
-const configDefaults = require('../../../configDefaults');
 
 /**
  * Get port from environment and store in Express.
@@ -53,7 +52,7 @@ function normalizePort(val) {
     }
 
 
-    return configDefaults.port;
+    return config.originalValues.port;
 }
 
 /**
