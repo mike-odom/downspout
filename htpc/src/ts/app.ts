@@ -23,9 +23,9 @@ if ("testFtpServer" in config) {
     const ftpd = require('ftpd');
 
     //override our settings if the test server is going to be up
-    config.seedboxFTP.host = "127.0.0.1";
-    config.seedboxFTP.user = config.testFtpServer.user;
-    config.seedboxFTP.password = config.testFtpServer.password;
+    config.seedboxFtp.host = "127.0.0.1";
+    config.seedboxFtp.user = config.testFtpServer.user;
+    config.seedboxFtp.password = config.testFtpServer.password;
 
     // // Path to your FTP root
     // ftpd.fsOptions.root = config.testFtpServer.root;
@@ -122,10 +122,10 @@ app.use(function (err, req, res, next) {
     res.render('error');
 });
 
-const configDefaults = require('../../configDefaults');
+const defaultConfig = require('./Config').defaultConfig;
 
 //Ghetto for now, don't try to syncRequest if no password is setup yet.
-if (config.seedboxFTP.password != configDefaults.seedboxFTP.password) {
+if (config.seedboxFtp.password != defaultConfig.seedboxFtp.password) {
     downloader.syncRequest();
 }
 
