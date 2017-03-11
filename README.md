@@ -2,7 +2,7 @@
 
 ## Configuration
 
-Before running you must setup a config.js file of your own in the root of the htpc folder. See [htpc/src/ts/Config.ts] for more information about the config settings.
+Before running you must setup a config.js file of your own in the root of the htpc folder. See [Config.ts](htpc/src/ts/Config.ts) for more information about the config settings.
 
 ### Example:
 ```
