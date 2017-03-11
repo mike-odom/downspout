@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "startold": "node ./bin/www",
-    "start": "npm-run ts-node ./src/ts/bin/www.ts"
+    "start": "npm-run ts-node ./src/ts/bin/www.ts",
+    "build": "tsc ./src/ts/bin/www.ts"
   },
   "dependencies": {
     "async": "latest",
@@ -20,6 +21,7 @@
     "mkdirp": "^0.5.1",
     "mongoose": "latest",
     "morgan": "~1.7.0",
+    "npm-run": "^4.1.1",
     "serve-favicon": "~2.3.0",
     "ts-node": "^2.1.0",
     "typescript": "^2.3.0-dev.20170308",
