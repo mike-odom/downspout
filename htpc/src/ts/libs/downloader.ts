@@ -72,7 +72,7 @@ class Downloader {
         this.downloading = false;
 
 
-        console.log("Downloadinasdfg completed");
+        console.log("Downloading completed");
                    
         if (this.lastRunHadStuffToDownload || this.syncRequestedWhileDownloading) {
             this.startSync();
