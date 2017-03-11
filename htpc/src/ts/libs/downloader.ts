@@ -13,7 +13,7 @@ const ftpConfig = config.seedboxFtp;
 
 class Downloader {
     private downloading = false;
-    private syncRequested = false;
+    private syncRequestedWhileDownloading = false;
     private lastRunHadStuffToDownload = false;
 
     private downloadQueue: FtpFile[] = [];
@@ -37,14 +37,14 @@ class Downloader {
     }
 
     public syncRequest() {
+        console.log("syncRequest");
+        
         if (this.downloading) {
             // A sync was requested during our download,
             // this will attempt to run again with fresh FTP folder info.
-            this.syncRequested = true;
+            this.syncRequestedWhileDownloading = true;
             return;
         }
-
-        this.downloading = true;
 
         this.startSync();
     }
@@ -72,12 +72,13 @@ class Downloader {
         this.downloading = false;
 
 
-        console.log("Downloading completed");
-
-        if (this.lastRunHadStuffToDownload || this.syncRequested) {
+        console.log("Downloadinasdfg completed");
+                   
+        if (this.lastRunHadStuffToDownload || this.syncRequestedWhileDownloading) {
             this.startSync();
         } else {
-            this.pollingTimeoutId = setTimeout(this.syncRequest.bind(this), ftpConfig.pollingIntervalInSeconds)
+            console.log("Polling interval", ftpConfig.pollingIntervalInSeconds * 1000);
+            this.pollingTimeoutId = setTimeout(this.syncRequest.bind(this), ftpConfig.pollingIntervalInSeconds * 1000)
         }
     }
 
@@ -86,6 +87,9 @@ class Downloader {
      *
      */
     private startSync() {
+        this.syncRequestedWhileDownloading = false;
+        this.downloading = true;
+
         //Cancel any scheduled polling of the server. This will be reset when we're done with our process.
         if (this.pollingTimeoutId) {
             clearTimeout(this.pollingTimeoutId);
