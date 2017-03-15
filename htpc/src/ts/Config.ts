@@ -17,6 +17,8 @@ class Config {
      */
     localSyncFolder = "~/somePath";
 
+    pathMappings: PathMapping[];
+
     /**
      * Download config
      *
@@ -59,6 +61,12 @@ class SeedboxFtpConfig {
     syncRoot: "/baseMediaFolder";
     port: 21;
     pollingIntervalInSeconds: 60;
+}
+
+class PathMapping {
+    remotePath: string;
+    localPath: string;
+    type: string;
 }
 
 module.exports.newConfig = function() {
