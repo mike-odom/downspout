@@ -11,6 +11,8 @@ const SyncLogItem = require('./../objects/SyncLogItem');
 
 const ftpConfig = config.seedboxFtp;
 
+//TODO: Create new Downloader for every time we try to sync.
+// This will prevent stuff like the FTP completed callbck from breaking when trying to access the downloadQueue which is missing.
 class Downloader {
     private downloading = false;
     private syncRequestedWhileDownloading = false;
@@ -188,10 +190,30 @@ class Downloader {
     }
 
     /**
+     * Given an FtpFile, will return the destination root based on our path mappings
+     *
+     * @param file
+     * @returns {string}
+     */
+    private getLocalDestinationRoot(file : FtpFile) : string {
+        let remotePath = file.actualPath;
+        let pathMap : PathMapping;
+
+        for (pathMap of config.pathMappings) {
+            if (remotePath.indexOf(pathMap.remotePath) == 0) {
+                return pathMap.localPath;
+            }
+        }
+
+        //Did not match a pathing, return the default path
+        return config.localSyncFolder;
+    }
+
+    /**
      * Download another item in the queue if it exists
      */
     private downloadNextInQueue() {
-        let file = this.getNextFileToDownload();
+        let file : FtpFile = this.getNextFileToDownload();
 
         if (!file) {
             if (!this.downloadQueue.length) {
@@ -202,7 +224,9 @@ class Downloader {
 
         file.downloading = true;
 
-        let localDirectory = FtpFile.appendSlash(config.localSyncFolder) + file.fullRelativePath;
+        let localRoot = this.getLocalDestinationRoot(file);
+
+        let localDirectory = FtpFile.appendSlash(localRoot) + file.fullRelativePath;
 
         console.log("mkdirp", localDirectory);
 
