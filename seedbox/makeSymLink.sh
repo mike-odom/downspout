@@ -179,5 +179,8 @@ EOM
 
 fi
 
+# delete empty folders that are a day old. Delayed a bit so we don't collide with any current operations.
+find ${syncDir}/* -type d -mmin +$((1)) -empty -delete
+
 echo
 echo "done."
