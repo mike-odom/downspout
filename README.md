@@ -6,7 +6,7 @@ Before running you must setup a config.js file of your own in the root of the ht
 
 ### Example:
 ```
-# our base config derives from the default config object. 
+// our base config derives from the default config object.
 const config = require('./src/ts/Config').newConfig();
 
 config.seedboxFtp = {
@@ -17,7 +17,23 @@ config.seedboxFtp = {
     pollingIntervalInSeconds: 10
 };
 
+// Default destination folder, if no path mappings found, this will be used.
 config.localSyncFolder = "C:\\seedboxTest";
+
+// optionally, you can setup path mappings to setup unique destination paths for specific remote paths
+config.pathMappings =
+    [
+        {
+            remotePath: "/seedbox-sync/toUpload/tv",
+            localPath: "c:/seedbox/tv",
+            type: "shows"
+        },
+        {
+            remotePath: "/seedbox-sync/toUpload/movies",
+            localPath: "d:/home-theater/movies",
+            type: "movies"
+        }
+    ];
 
 config.downloads = {
     countMax: 2,
