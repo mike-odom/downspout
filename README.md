@@ -59,9 +59,11 @@ This will run the app using pm2 allowing it to run in the background and on syst
 # Install pm2 with typescript support
 sudo npm install pm2 -g
 sudo pm2 install typescript
+
+# Have pm2 run at startup as the specified user
 sudo pm2 startup -u nodeuser
 
 # Start the app and save the config
-pm2 start src/ts/bin/www.ts --name "seedbox-sync"
+pm2 start htpc/src/ts/bin/www.ts --name "seedbox-sync"
 pm2 save
 ```
