@@ -4,7 +4,7 @@
 
 This app helps you sync from a seedbox / torrent machine, where media files are being downloaded, to your HTPC (or whatever destination computer.) It is in two parts. There is a bash script that lives on your seedbox which creates symlinks and then notifies the Node.js app that runs on your HTPC.
 
-## Seedboxhttp://dev.deluge-torrent.org/wiki/Plugins/Execute
+## Seedbox
 This script lives on your seedbox and requires your torrent application to call it.
 
 ### Configuration
@@ -31,7 +31,7 @@ chmod u+x deluge.sh
 chmod u+x makeSymLink.sh
 ```
 
-# Torrent client setup
+### Torrent client setup
 Setup the [Execute Plugin](http://dev.deluge-torrent.org/wiki/Plugins/Execute) to call seedbox/deluge.sh on torrent complete.
 
 ## HTPC 
