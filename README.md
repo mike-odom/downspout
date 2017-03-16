@@ -24,11 +24,10 @@ syncServer=http://[some ip address]:45532
 
 Important: syncDir and baseMediaDir need to both be accessible via FTP. And the FTP client must be able to delete files from syncDir.
 
-Make the files executable
+Make the script files executable
 ```bash
-chmod u+x config.sh
-chmod u+x deluge.sh
-chmod u+x makeSymLink.sh
+cd seedbox
+chmod u+x *.sh
 ```
 
 ### Torrent client setup
@@ -87,9 +86,15 @@ module.exports = config;
 
 ### How to run
 
-#### Standard node
-```
+#### Standard node start
+Do this first to make sure that everything runs ok.
+```bash
+cd htpc
+
+# Install required packages
 npm install
+
+# Start the app
 npm start
 ```
 
@@ -104,6 +109,6 @@ sudo pm2 install typescript
 sudo pm2 startup -u nodeuser
 
 # Start the app and save the config
-pm2 start htpc/src/ts/bin/www.ts --name "seedbox-sync"
+pm2 start src/ts/bin/www.ts --name "seedbox-sync"
 pm2 save
 ```
