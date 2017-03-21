@@ -24,7 +24,7 @@ class FtpFile {
         return FtpFile.appendSlash(this._basePath) + FtpFile.appendSlash(this._relativePath) + this._data.name;
     }
 
-    get fullRelativeDirectory(): string {
+    get relativeDirectory(): string {
         return FtpFile.appendSlash(this._relativePath);
     }
 
@@ -76,12 +76,11 @@ class FtpFile {
         this._basePath = basePath;
         this._relativePath = relativePath;
         this._data = ftpData;
-
-        //TODO: Convert this to a timestamp? Maybe.
         this._timestamp = this._data.time;
     }
 
     json() {
+        //TODO: Finish this data structure.
         return {
             "filename": this._data.name,
             "source_root": "/home/odie/deluge-scripts/toUpload",

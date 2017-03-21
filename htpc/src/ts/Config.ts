@@ -11,11 +11,12 @@ class Config {
     seedboxFtp: SeedboxFtpConfig = new SeedboxFtpConfig();
 
     /**
-     * Where you are syncing to on the local machine
+     * Where you are syncing to on the local machine.
+     * This is a default used when there is no path mappings set
      *
      * @type {string}
      */
-    localSyncFolder = "seedbox-sync";
+    localSyncRoot = "seedbox-sync";
 
     pathMappings: PathMapping[];
 
