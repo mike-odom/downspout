@@ -16,12 +16,15 @@ class FtpFile {
 
     private _downloading: boolean = false;
 
+    get directory(): string {
+        return FtpFile.appendSlash(this._basePath) + FtpFile.appendSlash(this._relativePath)
+    }
+
     get actualPath(): string {
         return FtpFile.appendSlash(this._basePath) + FtpFile.appendSlash(this._relativePath) + this._data.name;
     }
 
-    //TODO: Change this to relativeDirectory
-    get fullRelativePath(): string {
+    get fullRelativeDirectory(): string {
         return FtpFile.appendSlash(this._relativePath);
     }
 

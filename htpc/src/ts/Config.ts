@@ -15,7 +15,7 @@ class Config {
      *
      * @type {string}
      */
-    localSyncFolder = "~/somePath";
+    localSyncFolder = "seedbox-sync";
 
     pathMappings: PathMapping[];
 

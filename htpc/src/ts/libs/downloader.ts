@@ -190,23 +190,35 @@ class Downloader {
     }
 
     /**
-     * Given an FtpFile, will return the destination root based on our path mappings
+     * Given an FtpFile, will return the destination directory based on our path mappings
+     *
+     *  ex:
+     *    FTP file: "/seedbox-sync/toUpload/tv/Some TV Show/episode 01.avi",
+     *    localPath: "/microverse/library/seedbox/tv",
+     *
+     *  returns: "/microverse/library/seedbox/tv/Some TV Show/"
      *
      * @param file
      * @returns {string}
      */
-    private getLocalDestinationRoot(file : FtpFile) : string {
-        let remotePath = file.actualPath;
+    private getDestinationDirectory(file : FtpFile) : string {
+        let remoteDirectory = file.directory;
         let pathMap : PathMapping;
 
         for (pathMap of config.pathMappings) {
-            if (remotePath.indexOf(pathMap.remotePath) == 0) {
-                return pathMap.localPath;
+            // We're going to be doing some comparison and removal with this path. Make sure it's good.
+            let pathMapDirectory = FtpFile.appendSlash(pathMap.remotePath);
+
+            if (remoteDirectory.indexOf(pathMapDirectory) == 0) {
+                //Strip the pathMap root from the remoteDirectory to get the relative mapping
+                let relativeDirectory = remoteDirectory.substring(pathMapDirectory.length);
+
+                return FtpFile.appendSlash(pathMap.localPath) + relativeDirectory;
             }
         }
-
-        //Did not match a pathing, return the default path
-        return config.localSyncFolder;
+        
+        // Default value will be used if there are no matching path mappings
+        return FtpFile.appendSlash(config.localSyncFolder) + file.fullRelativeDirectory;
     }
 
     /**
@@ -224,9 +236,7 @@ class Downloader {
 
         file.downloading = true;
 
-        let localRoot = this.getLocalDestinationRoot(file);
-
-        let localDirectory = FtpFile.appendSlash(localRoot) + file.fullRelativePath;
+        let localDirectory = this.getDestinationDirectory(file);
 
         console.log("mkdirp", localDirectory);
 
@@ -237,8 +247,6 @@ class Downloader {
         });
 
         let localPath = FtpFile.appendSlash(localDirectory) + file.name;
-
-        //TODO: Change this to use streams so we know the file download status.
 
         let ftp = this.ftpForDownloading();
 
