@@ -8,7 +8,7 @@
  * config.localSyncFolder = "./somePath";
  */
 class Config {
-    seedboxFtp: SeedboxFtpConfig = new SeedboxFtpConfig();
+    seedboxFtp: SeedboxFtpConfig;
 
     /**
      * Where you are syncing to on the local machine.
@@ -18,7 +18,26 @@ class Config {
      */
     localSyncRoot = "seedbox-sync";
 
+    /**
+     * Used to map different remote paths to separate local paths instead of the localSyncRoot
+     * Example:
+            config.pathMappings =
+            [
+                {
+                    remotePath: "/seedbox-sync-test/toUpload/tv",
+                    localPath: "c:/media/tv",
+                    type: "shows"
+                },
+                {
+                    remotePath: "movies",
+                    localPath: "d:/movies",
+                    type: "movies"
+                }
+            ];
+    */
     pathMappings: PathMapping[];
+
+
 
     /**
      * Download config
