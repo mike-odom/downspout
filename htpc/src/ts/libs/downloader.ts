@@ -43,7 +43,7 @@ class Downloader {
         
         if (this.downloading) {
             // A sync was requested during our download,
-            // this will attempt to run again with fresh FTP folder info.
+            // this will attempt to run again with fresh FTP directory info.
             this.syncRequestedWhileDownloading = true;
             return;
         }
@@ -109,7 +109,7 @@ class Downloader {
             }
             console.log('Remote structure', JSON.stringify(data, null, 2));
 
-            //TODO: Flatten out this list and group folders with __seedbox_sync_folder__ files in them
+            //TODO: Flatten out this list and group directories with __seedbox_sync_directory__ files in them
             this.downloadQueue = this.processFilesJSON(data, syncFolder, 20);
 
             this.updateFileSizes(ftp, this.downloadQueue);
@@ -202,7 +202,7 @@ class Downloader {
      * @returns {string}
      */
     private getDestinationDirectory(file : FtpFile) : string {
-        let remoteDirectory = file.directory;
+        let remoteDirectory = file.relativeDirectory;
         let pathMap : PathMapping;
 
         for (pathMap of config.pathMappings) {
@@ -218,7 +218,7 @@ class Downloader {
         }
         
         // Default value will be used if there are no matching path mappings
-        return FtpFile.appendSlash(config.localSyncFolder) + file.fullRelativeDirectory;
+        return FtpFile.appendSlash(config.localSyncRoot) + file.relativeDirectory;
     }
 
     /**
@@ -240,7 +240,7 @@ class Downloader {
 
         console.log("mkdirp", localDirectory);
 
-        //Create the full path. jsftp will not error if the folder doesn't exist.
+        //Create the full path. jsftp will not error if the directory doesn't exist.
         mkdirp(localDirectory, function (err) {
             if (err) console.error(err);
             else console.log('dir created')

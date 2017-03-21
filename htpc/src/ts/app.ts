@@ -1,6 +1,17 @@
 import winston = require('winston');
 const logger : winston.LoggerInstance = require('./libs/logger');
 
+const config = require('./../../config');
+
+//Make sure that all our config values are good to use and cleaned up.
+// Do this before any other processing.
+const configValidator = require('./libs/ConfigValidator');
+
+if (!configValidator.validate(config)) {
+    logger.error("The config file did not validate. Please check your config.js file to continue.");
+    process.exit(1);
+}
+
 import express = require('express');
 
 const exphbs = require('express-handlebars');
@@ -11,8 +22,6 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 
 const app = express();
-
-const config = require('./../../config');
 
 const index = require('./routes/index');
 const users = require('./routes/users');
