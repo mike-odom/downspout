@@ -1,16 +1,13 @@
 import winston = require('winston');
 const logger : winston.LoggerInstance = require('./libs/logger');
 
-const config = require('./../../config');
-
 //Make sure that all our config values are good to use and cleaned up.
 // Do this before any other processing.
-const configValidator = require('./libs/ConfigValidator');
+let configValidator = require('./libs/ConfigValidator');
 
-if (!configValidator.validate(config)) {
-    logger.error("The config file did not validate. Please check your config.js file to continue.");
-    process.exit(1);
-}
+configValidator.validate();
+
+const config = require('./../../config');
 
 import express = require('express');
 
@@ -136,9 +133,7 @@ app.use(function (err, req, res, next) {
 
 const defaultConfig = require('./Config').defaultConfig;
 
-//Ghetto for now, don't try to syncRequest if no password is setup yet.
-if (config.seedboxFtp.password != defaultConfig.seedboxFtp.password) {
-    downloader.syncRequest();
-}
+//Do an automatic sync request on launch.
+downloader.syncRequest();
 
 module.exports = app;
