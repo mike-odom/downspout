@@ -4,7 +4,7 @@ const logger : winston.LoggerInstance = require('./logger');
 import fs = require('fs');
 
 /**
- * Validates our user's config settings and errors if necessary.
+ * Loads and validates our user's config settings and errors if necessary.
  *
  * Separated from the Config class so the Config class can be more readable by the user.
  */
@@ -20,13 +20,16 @@ class ConfigValidator {
      *
      * @returns {boolean} True if success, false if failure. App should not continue if false.
      */
-    public validate() {
+    public loadConfig(config: Config) {
         //Config file is found at root of app at runtime.
         if (!fs.existsSync('config.js')) {
-            this.quitApp("Config file was not found");
+            configValidator.quitApp("Config file was not found");
         }
 
-        const config = require('./../../../config');
+        // Read and eval our user's config file
+        const configFile = fs.readFileSync('config.js','utf8');
+
+        eval(configFile);
 
         for (let func of this.validations) {
             func(config);
@@ -35,7 +38,7 @@ class ConfigValidator {
         return true;
     }
 
-    private quitApp(message) {
+    public quitApp(message) {
         logger.error(message);
         logger.error("The config file did not validate. Please check your config.js file to continue.");
 

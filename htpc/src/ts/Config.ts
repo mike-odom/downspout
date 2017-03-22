@@ -3,7 +3,7 @@
  * To override them with your own, create a config.js file in your htpc folder
  *
  * ex.
- * 
+ *
  * const config = require('./src/ts/Config').newConfig();
  * config.localSyncFolder = "./somePath";
  */
@@ -89,8 +89,14 @@ class PathMapping {
     type: string;
 }
 
-module.exports.newConfig = function() {
-    return new Config();
-};
+const fs = require('fs');
+//Make sure that all our config values are good to use and cleaned up.
+// Do this before any other processing.
+let configValidator = require('./libs/ConfigValidator');
 
+const config = new Config();
+
+configValidator.loadConfig(config);
+
+module.exports = config;
 module.exports.defaultConfig = new Config();
