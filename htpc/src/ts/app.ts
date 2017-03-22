@@ -125,8 +125,6 @@ app.use(function (err, req, res, next) {
     res.render('error');
 });
 
-const defaultConfig = require('./objects/ConfigBase').defaultConfig;
-
 //Do an automatic sync request on launch.
 downloader.syncRequest();
 
