@@ -107,7 +107,7 @@ class Downloader {
                 console.log(err);
                 return;
             }
-            console.log('Remote structure', JSON.stringify(data, null, 2));
+            //console.log('Remote structure', JSON.stringify(data, null, 2));
 
             //TODO: Flatten out this list and group directories with __seedbox_sync_directory__ files in them
             this.downloadQueue = this.processFilesJSON(data, syncFolder, 20);
