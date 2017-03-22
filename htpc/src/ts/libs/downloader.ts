@@ -3,7 +3,7 @@ import * as winston from "winston";
 const logger : winston.LoggerInstance = require('./logger');
 
 const JSFtp = require('./jsftp-lsr')(require("jsftp"));
-const config = require('../../../config');
+const config = require('../Config');
 const FtpFile = require('../objects/FtpFile');
 import mkdirp = require('mkdirp');
 import mongoose = require('mongoose');

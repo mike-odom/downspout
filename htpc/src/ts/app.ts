@@ -1,13 +1,7 @@
 import winston = require('winston');
 const logger : winston.LoggerInstance = require('./libs/logger');
 
-//Make sure that all our config values are good to use and cleaned up.
-// Do this before any other processing.
-let configValidator = require('./libs/ConfigValidator');
-
-configValidator.validate();
-
-const config = require('./../../config');
+const config = require('./Config');
 
 import express = require('express');
 
@@ -131,7 +125,7 @@ app.use(function (err, req, res, next) {
     res.render('error');
 });
 
-const defaultConfig = require('./Config').defaultConfig;
+const defaultConfig = require('./objects/ConfigBase').defaultConfig;
 
 //Do an automatic sync request on launch.
 downloader.syncRequest();

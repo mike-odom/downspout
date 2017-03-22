@@ -13,7 +13,7 @@ const http = require('http');
 import winston = require('winston');
 const logger : winston.LoggerInstance = require('../libs/logger');
 
-const config = require('../../../config');
+const config = require('../Config');
 
 /**
  * Get port from environment and store in Express.
