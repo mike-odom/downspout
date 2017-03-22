@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "startold": "node ./bin/www",
-    "start": "npm-run ts-node ./src/ts/bin/www.ts",
-    "build": "tsc ./src/ts/bin/www.ts"
+    "start": "npm run build && npm run execute",
+    "build": "tsc ./src/ts/bin/www.ts",
+    "execute": "npm-run ts-node ./src/ts/bin/www.ts"
   },
   "dependencies": {
     "async": "latest",
