@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "npm run build && npm run execute",
-    "build": "tsc ./src/ts/bin/www.ts",
+    "build": "tsc",
     "execute": "npm-run ts-node ./src/ts/bin/www.ts"
   },
   "dependencies": {
