@@ -1,6 +1,6 @@
 import * as winston from "winston";
 
-const logger : winston.LoggerInstance = require('./logger');
+const logger : winston.LoggerInstance = require('./Logger');
 
 const JSFtp = require('./jsftp-lsr')(require("jsftp"));
 const config = require('../Config');

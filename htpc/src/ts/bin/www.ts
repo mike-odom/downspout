@@ -11,7 +11,7 @@ const debug = require('debug')('seedboxsync:server');
 const http = require('http');
 
 import winston = require('winston');
-const logger : winston.LoggerInstance = require('../libs/logger');
+const logger : winston.LoggerInstance = require('../libs/Logger');
 
 const config = require('../Config');
 
