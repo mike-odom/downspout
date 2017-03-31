@@ -112,7 +112,9 @@ if [ -d "$torrentPath" ]; then
         # The torrent was a directory
         mkdir -p "$destDir"
 
-        touch $destDir/__seedbox_sync_directory__
+        # Let's do this another way in the future. Maybe add a .__seedboxSync to the folder name?
+        # We don't need this file lying around not getting deleted.
+        # touch "$destDir/__seedbox_sync_directory__"
 
         #TODO: Directory, place __seedbox_sync_folder__ marker inside
         #    so syncer knows to treat this folder as it's own contained entity
