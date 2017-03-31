@@ -1,5 +1,5 @@
 import winston = require('winston');
-const logger : winston.LoggerInstance = require('./logger');
+const logger : winston.LoggerInstance = require('./Logger');
 
 import fs = require('fs');
 

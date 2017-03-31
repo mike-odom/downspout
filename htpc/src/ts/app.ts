@@ -1,5 +1,5 @@
 import winston = require('winston');
-const logger : winston.LoggerInstance = require('./libs/logger');
+const logger : winston.LoggerInstance = require('./libs/Logger');
 
 const config = require('./Config');
 
@@ -71,7 +71,7 @@ if ("testFtpServer" in config) {
     server.listen(21);
 }
 
-const downloader = require('./libs/downloader');
+const downloader = require('./libs/Downloader');
 
 // view engine setup
 //app.set('views', path.join(__dirname, 'views'));
