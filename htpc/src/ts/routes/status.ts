@@ -1,7 +1,7 @@
 import express = require('express');
 const router = express.Router();
 
-const downloader = require('../libs/Downloader');
+const downloader = require('./Downloader');
 
 /* GET home page. */
 router.get('/', function (req, res, next) {

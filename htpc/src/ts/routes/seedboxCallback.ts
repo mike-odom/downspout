@@ -3,7 +3,7 @@ import bodyParser = require('body-parser');
 
 const router = express.Router();
 
-const downloader = require('../libs/Downloader');
+const downloader = require('./Downloader');
 
 /**
  * New download completed on the seedbox.
