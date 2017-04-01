@@ -1,5 +1,5 @@
 import winston = require('winston');
-const logger : winston.LoggerInstance = require('./controllers/Logger');
+const logger : winston.LoggerInstance = require('./libs/Logger');
 
 const config = require('./Config');
 
@@ -14,7 +14,6 @@ const bodyParser = require('body-parser');
 
 const app = express();
 
-const index = require('./routes/index');
 const users = require('./routes/users');
 const seedboxCallback = require('./routes/seedboxCallback');
 const status = require('./routes/status');
@@ -71,7 +70,7 @@ if ("testFtpServer" in config) {
     server.listen(21);
 }
 
-const downloader = require('./controllers/Downloader');
+const downloader = require('./libs/Downloader');
 
 // view engine setup
 //app.set('views', path.join(__dirname, 'views'));
@@ -89,11 +88,9 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '../../public')));
 
-app.use('/', index);
+app.use('/', status);
 app.use('/users', users);
 app.use('/seedboxCallback', seedboxCallback);
-app.use('/status', status);
-
 
 class HttpError extends Error {
     status: number;
@@ -107,8 +104,9 @@ class HttpError extends Error {
 }
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
-    const err = new HttpError('Not Found', 404);
-    
+    const err = new HttpError('Not Found - ' + req.url, 404);
+
+    logger.error(err.message);
     next(err);
 });
 
