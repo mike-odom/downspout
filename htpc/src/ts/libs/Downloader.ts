@@ -3,10 +3,12 @@ import * as winston from "winston";
 const logger : winston.LoggerInstance = require('./Logger');
 
 const JSFtp = require('./jsftp-lsr')(require("jsftp"));
+const fs = require('fs');
 const config = require('../Config');
 const FtpFile = require('../objects/FtpFile');
 import mkdirp = require('mkdirp');
 import mongoose = require('mongoose');
+import {Socket} from "net";
 const SyncLogItem = require('./../objects/SyncLogItem');
 
 const ftpConfig = config.seedboxFtp;
@@ -36,6 +38,8 @@ class Downloader {
             user: ftpConfig.user || "anonymous",
             pass: ftpConfig.password || "@anonymous"
         });
+
+        //ftp.timeout =
 
         return ftp;
     }
@@ -265,7 +269,7 @@ class Downloader {
         let ftp = this.ftpForDownloading();
 
         function ftpDownloadError(err) {
-            logger.error("Error downloading file\n", err);
+            logger.error("Error downloading file\r\n", err);
 
             file.downloading = false;
 
@@ -277,50 +281,84 @@ class Downloader {
         ftp.on('timeout', ftpDownloadError);
 
         logger.info("Downloading", file.fullPath);
-        ftp.get(file.fullPath, localPath, function (err) {
+
+
+        // Retrieve the file using async streams
+        ftp.getGetSocket(file.fullPath, function(err: Error, sock: Socket) {
             if (err) {
                 ftpDownloadError(err);
                 return;
-
             }
 
-            logger.info("File downloaded succesfully", localPath);
+            var fd = fs.openSync(localPath, "w+");
 
-            if (config.deleteRemoteFiles) {
-                var deleteFtpError = function deleteFtpError(err) {
-                    logger.error("Error deleting file, make sure you have proper permissions", file.actualPath, err);
+            // `sock` is a stream. attach events to it.
+            sock.on("data", function(p) {
+                fs.writeSync(fd, p, 0, p.length, null);
 
-                    //TODO: Handle this failed delete better. Logging or something.
+                var data = {
+                    filename: file.fullPath,
+                    transferred: sock.bytesRead,
                 };
+                self.ftpProgressUpdate(data);
+            });
+            sock.on("close", function(err) {
+                if (err) {
+                    ftpDownloadError(err);
+                    return;
+                }
 
-                //Delete the symlink on the server
-                let deleteFtp = this.newJSFtp();
-                deleteFtp.on('error', deleteFtpError);
-                deleteFtp.on('timeout', deleteFtpError);
+                logger.info("File downloaded succesfully", localPath);
 
-                deleteFtp.raw("dele " + file.actualPath, function (err) {
-                    if (err) {
-                        deleteFtpError(err);
-                    } else {
-                        logger.info("Deleted symlink", file.actualPath);
-                    }
-                });
-            }
+                self.doneWithFtpObj(ftp);
+                fs.closeSync(fd);
 
-            //TODO: Delete __seedbox_sync_folder__ file
-            //TODO: Tell media server that files have been updated. If we've finished a section.
+                self.downloadNextInQueue();
+            });
 
-            this.completedList.push(file);
+            // The sock stream is paused. Call resume() on it to start reading.
+            sock.resume();
 
-            //Done, remove from queue.
-            this.removeFileFromQueue(file, this.downloadQueue);
+            // Kick off the next download if we're ready for it.
+            self.downloadNextInQueue();
+        });
+    }
 
-            this.doneWithFtpObj(ftp);
-            this.downloadNextInQueue();
+    private fileDownloadedSuccessfully(file) {
+        if (config.deleteRemoteFiles) {
+            this.deleteRemoteFile(file);
+        }
 
-        }.bind(this));
+        //TODO: Delete __seedbox_sync_folder__ file
+        //TODO: Tell media server that files have been updated. If we've finished a section.
+
+        this.completedList.push(file);
+
+        //Done, remove from queue.
+        this.removeFileFromQueue(file, this.downloadQueue);
 
         this.downloadNextInQueue();
+    }
+
+    private deleteRemoteFile(file: FtpFile) {
+        var deleteFtpError = function deleteFtpError(err) {
+            logger.error("Error deleting file, make sure you have proper permissions", file.actualPath, err);
+
+            //TODO: Handle this failed delete better. Logging or something.
+        };
+
+        //Delete the symlink on the server
+        let deleteFtp = this.newJSFtp();
+        deleteFtp.on('error', deleteFtpError);
+        deleteFtp.on('timeout', deleteFtpError);
+
+        deleteFtp.raw("dele " + file.actualPath, function (err) {
+            if (err) {
+                deleteFtpError(err);
+            } else {
+                logger.info("Deleted symlink", file.actualPath);
+            }
+        });
     }
 
     /**
