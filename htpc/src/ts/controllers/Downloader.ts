@@ -2,7 +2,6 @@ import * as winston from "winston";
 
 const logger : winston.LoggerInstance = require('./Logger');
 
-const JSFtp = require('./jsftp-lsr')(require("jsftp"));
 const fs = require('fs');
 const config = require('../Config');
 const FtpFile = require('../objects/FtpFile');
@@ -11,7 +10,7 @@ import mongoose = require('mongoose');
 import {Socket} from "net";
 const SyncLogItem = require('./../objects/SyncLogItem');
 
-const ftpConfig = config.seedboxFtp;
+const FTPController = require('./FTPController');
 
 //TODO: Create new Downloader for every time we try to sync.
 // This will prevent stuff like the FTP completed callbck from breaking when trying to access the downloadQueue which is missing.
@@ -23,26 +22,7 @@ class Downloader {
     private downloadQueue: FtpFile[] = [];
     private completedList: FtpFile[] = [];
 
-    /** @type {JSFtp[]} */
-    private ftpConnectionPool = [];
-
     private pollingTimeoutId = 0;
-
-    /**
-     * Create a new JSFtp instance with our config info
-     */
-    private newJSFtp() {
-        const ftp = new JSFtp({
-            host: ftpConfig.host,
-            port: ftpConfig.port || 21,
-            user: ftpConfig.user || "anonymous",
-            pass: ftpConfig.password || "@anonymous"
-        });
-
-        //ftp.timeout =
-
-        return ftp;
-    }
 
     public syncRequest() {
         logger.info("syncRequest");
@@ -112,7 +92,7 @@ class Downloader {
             self.downloadCompleteCallback();
         }
 
-        let ftp = self.newJSFtp();
+        let ftp = FTPController.newJSFtp();
 
         //jsftp does not send these errors to the callback so we must handle them.
         ftp.on('error', ftpScanError);
@@ -140,28 +120,6 @@ class Downloader {
             //Go Async
             self.downloadNextInQueue();
         });
-    }
-    
-    /**
-     * Creates a new JSFtp instance or pulls one from a connection pool
-     *
-     * @returns {JSFtp}
-     */
-    private ftpForDownloading() {
-        let ftp = this.ftpConnectionPool.pop() || this.newJSFtp();
-
-        ftp.on('progress', this.ftpProgressUpdate.bind(this));
-
-        return ftp;
-    }
-
-    /**
-     * Done with this FTP object, put it back in the pool
-     *
-     * @param ftp {JSFtp}
-     */
-    private doneWithFtpObj(ftp) {
-        this.ftpConnectionPool.push(ftp);
     }
 
     /**
@@ -266,14 +224,14 @@ class Downloader {
 
         let localPath = FtpFile.appendSlash(localDirectory) + file.name;
 
-        let ftp = this.ftpForDownloading();
+        let ftp = FTPController.ftpForDownloading();
 
         function ftpDownloadError(err) {
             logger.error("Error downloading file\r\n", err);
 
             file.downloading = false;
 
-            self.doneWithFtpObj(ftp);
+            FTPController.doneWithFtpObj(ftp);
             self.downloadNextInQueue();
         }
 
@@ -310,7 +268,7 @@ class Downloader {
 
                 logger.info("File downloaded succesfully", localPath);
 
-                self.doneWithFtpObj(ftp);
+                FTPController.doneWithFtpObj(ftp);
                 fs.closeSync(fd);
 
                 self.downloadNextInQueue();
@@ -348,7 +306,7 @@ class Downloader {
         };
 
         //Delete the symlink on the server
-        let deleteFtp = this.newJSFtp();
+        let deleteFtp = FTPController.newJSFtp();
         deleteFtp.on('error', deleteFtpError);
         deleteFtp.on('timeout', deleteFtpError);
 
