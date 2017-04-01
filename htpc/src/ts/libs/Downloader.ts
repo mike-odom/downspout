@@ -287,15 +287,23 @@ class Downloader {
             logger.info("File downloaded succesfully", localPath);
 
             if (config.deleteRemoteFiles) {
+                var deleteFtpError = function deleteFtpError(err) {
+                    logger.error("Error deleting file, make sure you have proper permissions", file.actualPath, err);
+
+                    //TODO: Handle this failed delete better. Logging or something.
+                };
+
                 //Delete the symlink on the server
                 let deleteFtp = this.newJSFtp();
+                deleteFtp.on('error', deleteFtpError);
+                deleteFtp.on('timeout', deleteFtpError);
+
                 deleteFtp.raw("dele " + file.actualPath, function (err) {
                     if (err) {
-                        logger.error("Error deleting file, make sure you have proper permissions", file.actualPath, err);
+                        deleteFtpError(err);
                     } else {
                         logger.info("Deleted symlink", file.actualPath);
                     }
-
                 });
             }
 
