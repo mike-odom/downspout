@@ -30,16 +30,18 @@ class Downloader {
      * Create a new JSFtp instance with our config info
      */
     private newJSFtp() {
-        return new JSFtp({
+        const ftp = new JSFtp({
             host: ftpConfig.host,
             port: ftpConfig.port || 21,
             user: ftpConfig.user || "anonymous",
             pass: ftpConfig.password || "@anonymous"
         });
+
+        return ftp;
     }
 
     public syncRequest() {
-        console.log("syncRequest");
+        logger.info("syncRequest");
         
         if (this.downloading) {
             // A sync was requested during our download,
@@ -72,14 +74,13 @@ class Downloader {
 
     private downloadCompleteCallback() {
         this.downloading = false;
-
-
-        console.log("Downloading completed");
+        
+        logger.info("Downloading completed");
                    
         if (this.lastRunHadStuffToDownload || this.syncRequestedWhileDownloading) {
             this.startSync();
         } else {
-            console.log("Polling interval", ftpConfig.pollingIntervalInSeconds * 1000);
+            logger.debug("Polling interval", ftpConfig.pollingIntervalInSeconds * 1000);
             this.pollingTimeoutId = setTimeout(this.syncRequest.bind(this), ftpConfig.pollingIntervalInSeconds * 1000)
         }
     }
@@ -89,41 +90,52 @@ class Downloader {
      *
      */
     private startSync() {
-        this.syncRequestedWhileDownloading = false;
-        this.downloading = true;
+        let self = this;
+
+        self.syncRequestedWhileDownloading = false;
+        self.downloading = true;
 
         //Cancel any scheduled polling of the server. This will be reset when we're done with our process.
-        if (this.pollingTimeoutId) {
-            clearTimeout(this.pollingTimeoutId);
-            this.pollingTimeoutId = 0;
+        if (self.pollingTimeoutId) {
+            clearTimeout(self.pollingTimeoutId);
+            self.pollingTimeoutId = 0;
         }
 
         let syncFolder = config.seedboxFtp.syncRoot;
 
-        let ftp = this.newJSFtp();
+        function ftpScanError(err) {
+            logger.error("Error trying to scan FTP", err);
+            self.downloadCompleteCallback();
+        }
+
+        let ftp = self.newJSFtp();
+
+        //jsftp does not send these errors to the callback so we must handle them.
+        ftp.on('error', ftpScanError);
+        ftp.on('timeout', ftpScanError);
 
         ftp.lsr(syncFolder, function (err, data) {
             if (err) {
-                console.log(err);
+                ftpScanError(err);
                 return;
             }
-            //console.log('Remote structure', JSON.stringify(data, null, 2));
+            //logger.info('Remote structure', JSON.stringify(data, null, 2));
 
             //TODO: Flatten out this list and group directories with __seedbox_sync_directory__ files in them
-            this.downloadQueue = this.processFilesJSON(data, syncFolder, 20);
+            self.downloadQueue = self.processFilesJSON(data, syncFolder, 20);
 
-            this.updateFileSizes(ftp, this.downloadQueue);
+            self.updateFileSizes(ftp, self.downloadQueue);
 
             //TODO: Sort each group's contents by date
-            this.downloadQueue.sort(FtpFile.sortNewestFirst);
+            self.downloadQueue.sort(FtpFile.sortNewestFirst);
 
-            //console.log(downloadQueue);
+            //logger.info(downloadQueue);
 
             //TODO: Sort the groups by date
 
             //Go Async
-            this.downloadNextInQueue();
-        }.bind(this));
+            self.downloadNextInQueue();
+        });
     }
     
     /**
@@ -225,6 +237,8 @@ class Downloader {
      * Download another item in the queue if it exists
      */
     private downloadNextInQueue() {
+        let self = this;
+        
         let file : FtpFile = this.getNextFileToDownload();
 
         if (!file) {
@@ -238,50 +252,64 @@ class Downloader {
 
         let localDirectory = this.getDestinationDirectory(file);
 
-        console.log("mkdirp", localDirectory);
+        logger.info("mkdirp", localDirectory);
 
         //Create the full path. jsftp will not error if the directory doesn't exist.
         mkdirp(localDirectory, function (err) {
-            if (err) console.error(err);
-            else console.log('dir created')
+            if (err) logger.error(err);
+            else logger.info('dir created')
         });
 
         let localPath = FtpFile.appendSlash(localDirectory) + file.name;
 
         let ftp = this.ftpForDownloading();
 
-        console.log("Downloading", file.fullPath);
+        function ftpDownloadError(err) {
+            logger.error("Error downloading file\n", err);
+
+            file.downloading = false;
+
+            self.doneWithFtpObj(ftp);
+            self.downloadNextInQueue();
+        }
+
+        ftp.on('error', ftpDownloadError);
+        ftp.on('timeout', ftpDownloadError);
+
+        logger.info("Downloading", file.fullPath);
         ftp.get(file.fullPath, localPath, function (err) {
             if (err) {
-                console.log("There was an error downloading the file: ", err);
-            } else {
-                console.log("File downloaded succesfully", localPath);
+                ftpDownloadError(err);
+                return;
 
-                if (config.deleteRemoteFiles) {
-                    //Delete the symlink on the server
-                    let deleteFtp = this.newJSFtp();
-                    deleteFtp.raw("dele " + file.actualPath, function (err) {
-                        if (err) {
-                            console.error("Error deleting file, make sure you have proper permissions", file.actualPath, err);
-                        } else {
-                            console.log("Deleted symlink", file.actualPath);
-                        }
-
-                    });
-                }
-
-                //TODO: Delete __seedbox_sync_folder__ file
-                //TODO: Tell media server that files have been updated. If we've finished a section.
-
-                //Done, remove from queue.
-                this.removeFileFromQueue(file, this.downloadQueue);
-
-                this.completedList.push(file);
-
-                this.doneWithFtpObj(ftp);
-
-                this.downloadNextInQueue();
             }
+
+            logger.info("File downloaded succesfully", localPath);
+
+            if (config.deleteRemoteFiles) {
+                //Delete the symlink on the server
+                let deleteFtp = this.newJSFtp();
+                deleteFtp.raw("dele " + file.actualPath, function (err) {
+                    if (err) {
+                        logger.error("Error deleting file, make sure you have proper permissions", file.actualPath, err);
+                    } else {
+                        logger.info("Deleted symlink", file.actualPath);
+                    }
+
+                });
+            }
+
+            //TODO: Delete __seedbox_sync_folder__ file
+            //TODO: Tell media server that files have been updated. If we've finished a section.
+
+            this.completedList.push(file);
+
+            //Done, remove from queue.
+            this.removeFileFromQueue(file, this.downloadQueue);
+
+            this.doneWithFtpObj(ftp);
+            this.downloadNextInQueue();
+
         }.bind(this));
 
         this.downloadNextInQueue();
@@ -302,13 +330,13 @@ class Downloader {
         relativePath = FtpFile.appendSlash(relativePath);
 
         if (depth == 0) {
-            console.log("Maximum file depth reached, exiting", relativePath);
+            logger.info("Maximum file depth reached, exiting", relativePath);
             return;
         }
         for (let file of data) {
             //Only transfer symlinks, or if running the test server, all files
             if (file.type == FtpFile.FTP_TYPE_SYM_LINK || (/*config.testFtpServer && */ file.type == FtpFile.FTP_TYPE_FILE)) {
-                console.log(relativePath + file.name);
+                logger.info(relativePath + file.name);
                 let fileObj = new FtpFile(basePath, relativePath, file);
                 outList.push(fileObj);
             } else if (file.type == FtpFile.FTP_TYPE_DIRECTORY) {
@@ -341,7 +369,7 @@ class Downloader {
                         return;
                     }
 
-                    console.log("Got target data", data[0]);
+                    logger.info("Got target data", data[0]);
                     file.setTargetData(data[0]);
                 });
             }
