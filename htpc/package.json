@@ -15,8 +15,6 @@
     "express": "~4.14.0",
     "express-handlebars": "^3.0.0",
     "ftp-server": "latest",
-    "ftpd": "latest",
-    "ftps": "latest",
     "jsftp": "github:thatodieguy/jsftp",
     "mkdirp": "^0.5.1",
     "mongoose": "latest",
@@ -26,7 +24,7 @@
     "ts-node": "^2.1.0",
     "typescript": "^2.2.1",
     "upath": "^0.2.0",
-    "winston": "latest"
+    "winston": "^2.3.1"
   },
   "devDependencies": {
     "@types/body-parser": "0.0.34",
