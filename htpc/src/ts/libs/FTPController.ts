@@ -1,4 +1,4 @@
-const JSFtp = require('../libs/jsftp-lsr')(require("jsftp"));
+const JSFtp = require('./jsftp-lsr')(require("jsftp"));
 
 const appConfig = require('../Config');
 
