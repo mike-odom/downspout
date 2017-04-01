@@ -9,3 +9,6 @@ config.js
 # NodeJS
 node_modules/
 npm-debug.log
+
+# Yarn package manager
+yarn.lock
