@@ -70,7 +70,7 @@ if ("testFtpServer" in config) {
     server.listen(21);
 }
 
-const downloader = require('./libs/Downloader');
+const downloader = require('./libs/SyncController');
 
 // view engine setup
 //app.set('views', path.join(__dirname, 'views'));
