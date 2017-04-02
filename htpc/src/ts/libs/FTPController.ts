@@ -5,9 +5,26 @@ const appConfig = require('../Config');
 const ftpConfig = appConfig.seedboxFtp;
 
 class FTPController {
+    private static _instance: FTPController;
+
+    private constructor() {
+
+    }
+
+    /**
+     * Singleton!
+     * @returns {FTPController}
+     */
+    public static getInstance() {
+        if (!FTPController._instance) {
+            FTPController._instance = new FTPController();
+        }
+        return FTPController._instance;
+    }
+
     /** @type {JSFtp[]} */
     private ftpConnectionPool = [];
-    
+
     /**
      * Create a new JSFtp instance with our config info
      */
@@ -46,4 +63,5 @@ class FTPController {
 
 }
 
-module.exports = new FTPController();
+//Is this proper to do this with a singleton in node? idk node newb
+module.exports = FTPController.getInstance();
