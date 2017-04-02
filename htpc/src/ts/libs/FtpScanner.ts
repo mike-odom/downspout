@@ -3,7 +3,7 @@ import Err = ts.server.Msg.Err;
 const logger = require('./Logger');
 const config = require('../Config');
 
-const FTPController = require('./FTPController');
+const FTPController = require('./FtpController');
 const FtpFile = require('../objects/FtpFile');
 
 type ScanCompleteCallbackFunction = (err: Error, files: FtpFile[]) => void;

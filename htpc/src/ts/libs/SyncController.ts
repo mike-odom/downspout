@@ -10,8 +10,8 @@ import mongoose = require('mongoose');
 import {Socket} from "net";
 const SyncLogItem = require('./../objects/SyncLogItem');
 
-const FTPController = require('./FTPController');
-const FTPScanner = require('./FTPScanner');
+const FTPController = require('./FtpController');
+const FTPScanner = require('./FtpScanner');
 
 //TODO: Create new SyncController for every time we try to sync.
 // This will prevent stuff like the FTP completed callbck from breaking when trying to access the downloadQueue which is missing.
