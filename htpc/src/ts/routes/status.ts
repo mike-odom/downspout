@@ -1,7 +1,7 @@
 import express = require('express');
 const router = express.Router();
 
-const downloader = require('../libs/Downloader');
+const downloader = require('../libs/SyncController');
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
