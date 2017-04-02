@@ -4,31 +4,15 @@ const appConfig = require('../Config');
 
 const ftpConfig = appConfig.seedboxFtp;
 
+/** @type {JSFtp[]} */
+const ftpConnectionPool = [];
+
 class FTPController {
-    private static _instance: FTPController;
-
-    private constructor() {
-
-    }
-
-    /**
-     * Singleton!
-     * @returns {FTPController}
-     */
-    public static getInstance() {
-        if (!FTPController._instance) {
-            FTPController._instance = new FTPController();
-        }
-        return FTPController._instance;
-    }
-
-    /** @type {JSFtp[]} */
-    private ftpConnectionPool = [];
 
     /**
      * Create a new JSFtp instance with our config info
      */
-    public newJSFtp() {
+    public static newJSFtp() {
         const ftp = new JSFtp({
             host: ftpConfig.host,
             port: ftpConfig.port || 21,
@@ -46,8 +30,8 @@ class FTPController {
      *
      * @returns {JSFtp}
      */
-    public ftpForDownloading() {
-        let ftp = this.ftpConnectionPool.pop() || this.newJSFtp();
+    public static ftpForDownloading() {
+        let ftp = ftpConnectionPool.pop() || this.newJSFtp();
 
         return ftp;
     }
@@ -57,11 +41,11 @@ class FTPController {
      *
      * @param ftp {JSFtp}
      */
-    public doneWithFtpObj(ftp) {
-        this.ftpConnectionPool.push(ftp);
+    public static doneWithFtpObj(ftp) {
+        ftpConnectionPool.push(ftp);
     }
 
 }
 
 //Is this proper to do this with a singleton in node? idk node newb
-module.exports = FTPController.getInstance();
+module.exports = FTPController;

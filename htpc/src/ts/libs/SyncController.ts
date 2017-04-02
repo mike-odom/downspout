@@ -11,34 +11,22 @@ import {Socket} from "net";
 const SyncLogItem = require('./../objects/SyncLogItem');
 
 const FTPController = require('./FTPController');
+const FTPScanner = require('./FTPScanner');
 
-//TODO: Create new Downloader for every time we try to sync.
+//TODO: Create new SyncController for every time we try to sync.
 // This will prevent stuff like the FTP completed callbck from breaking when trying to access the downloadQueue which is missing.
-class Downloader {
-    private downloading = false;
-    private syncRequestedWhileDownloading = false;
-    private lastRunHadStuffToDownload = false;
-
+class SyncController {
     private downloadQueue: FtpFile[] = [];
     private completedList: FtpFile[] = [];
-
-    private pollingTimeoutId = 0;
+    private ftpScanner = new FTPScanner(this.scanCompleteCallback.bind(this));
 
     public syncRequest() {
         logger.info("syncRequest");
         
-        if (this.downloading) {
-            // A sync was requested during our download,
-            // this will attempt to run again with fresh FTP directory info.
-            this.syncRequestedWhileDownloading = true;
-            return;
-        }
-
-        this.startSync();
+        this.ftpScanner.scanRequest();
     }
 
     public status() {
-
         let downloads = [];
 
         for (let file of this.downloadQueue) {
@@ -56,70 +44,31 @@ class Downloader {
         };
     }
 
-    private downloadCompleteCallback() {
-        this.downloading = false;
+    public scanCompleteCallback(err: Error, scannedQueue: FtpFile[]) {
+        var self = this;
+
+        if (err) {
+            logger.error("scanCompleteCallback: ", err);
+            return;
+        }
+
+        let originalDownloadQueueLength = self.downloadQueue.length;
         
-        logger.info("Downloading completed");
-                   
-        if (this.lastRunHadStuffToDownload || this.syncRequestedWhileDownloading) {
-            this.startSync();
-        } else {
-            logger.debug("Polling interval", ftpConfig.pollingIntervalInSeconds * 1000);
-            this.pollingTimeoutId = setTimeout(this.syncRequest.bind(this), ftpConfig.pollingIntervalInSeconds * 1000)
-        }
-    }
-
-    /**
-     * Looks at the files in the remote server and starts the download process
-     *
-     */
-    private startSync() {
-        let self = this;
-
-        self.syncRequestedWhileDownloading = false;
-        self.downloading = true;
-
-        //Cancel any scheduled polling of the server. This will be reset when we're done with our process.
-        if (self.pollingTimeoutId) {
-            clearTimeout(self.pollingTimeoutId);
-            self.pollingTimeoutId = 0;
-        }
-
-        let syncFolder = config.seedboxFtp.syncRoot;
-
-        function ftpScanError(err) {
-            logger.error("Error trying to scan FTP", err);
-            self.downloadCompleteCallback();
-        }
-
-        let ftp = FTPController.newJSFtp();
-
-        //jsftp does not send these errors to the callback so we must handle them.
-        ftp.on('error', ftpScanError);
-        ftp.on('timeout', ftpScanError);
-
-        ftp.lsr(syncFolder, function (err, data) {
-            if (err) {
-                ftpScanError(err);
-                return;
+        // Merge downloadQueue & scannedQueue
+        for (var t = 0; t < scannedQueue.length; t++) {
+            var testFile = scannedQueue[t];
+            for (var n = 0; n < originalDownloadQueueLength; n++) {
+                if (testFile.equals(self.downloadQueue[n])) {
+                    testFile = null;
+                    break;
+                }
             }
-            //logger.info('Remote structure', JSON.stringify(data, null, 2));
+            if (testFile) {
+                self.downloadQueue.push(testFile);
+            }
+        }
 
-            //TODO: Flatten out this list and group directories with __seedbox_sync_directory__ files in them
-            self.downloadQueue = self.processFilesJSON(data, syncFolder, 20);
-
-            self.updateFileSizes(ftp, self.downloadQueue);
-
-            //TODO: Sort each group's contents by date
-            self.downloadQueue.sort(FtpFile.sortNewestFirst);
-
-            //logger.info(downloadQueue);
-
-            //TODO: Sort the groups by date
-
-            //Go Async
-            self.downloadNextInQueue();
-        });
+        self.downloadNextInQueue();
     }
 
     /**
@@ -204,9 +153,7 @@ class Downloader {
         let file : FtpFile = this.getNextFileToDownload();
 
         if (!file) {
-            if (!this.downloadQueue.length) {
-                this.downloadCompleteCallback();
-            }
+            logger.info("No more files left in the queue to process.");
             return;
         }
 
@@ -320,67 +267,6 @@ class Downloader {
     }
 
     /**
-     * Recursive function to traverse a file tree.
-     *
-     * JavaScript has a maximum depth of 1000. But we should do something lower.
-     *
-     * @param data an array of files
-     * @param basePath the path where these files are located
-     * @param depth how deep to go down in the children
-     * @param relativePath
-     * @param outList
-     */
-    private processFilesJSON(data, basePath, depth = 20, relativePath = "", outList = []) {
-        relativePath = FtpFile.appendSlash(relativePath);
-
-        if (depth == 0) {
-            logger.info("Maximum file depth reached, exiting", relativePath);
-            return;
-        }
-        for (let file of data) {
-            //Only transfer symlinks, or if running the test server, all files
-            if (file.type == FtpFile.FTP_TYPE_SYM_LINK || (/*config.testFtpServer && */ file.type == FtpFile.FTP_TYPE_FILE)) {
-                logger.info(relativePath + file.name);
-                let fileObj = new FtpFile(basePath, relativePath, file);
-                outList.push(fileObj);
-            } else if (file.type == FtpFile.FTP_TYPE_DIRECTORY) {
-                if (typeof file.children == 'object') {
-                    const newPath = relativePath + file.name;
-                    this.processFilesJSON(file.children, basePath, depth - 1, newPath, outList);
-                }
-            }
-        }
-
-        return outList;
-    }
-
-    /**
-     * The recursive directory search only gives us symlinks. We need to see how big the actual files are one by one.
-     *
-     * This is fine to not block because it's only updating the file sizes to show on the UI and not any logic
-     *
-     * @param ftp
-     * @param list
-     */
-    private updateFileSizes(ftp, list) {
-        for (let file of list) {
-            /** @type {FtpFile} */
-
-            if (file.isSymLink) {
-                ftp.ls(file.fullPath, function (err, data) {
-                    if (err || data.length != 1) {
-                        logger.log("Error getting data for", file.fullPath);
-                        return;
-                    }
-
-                    logger.info("Got target data", data[0]);
-                    file.setTargetData(data[0]);
-                });
-            }
-        }
-    }
-
-    /**
      * Callback from jsftp to let us know file download progress
      *
      * @param data - { transfered, total, filename, action (get/put) }
@@ -396,4 +282,4 @@ class Downloader {
     }
 }
 
-module.exports = new Downloader();
+module.exports = new SyncController();
