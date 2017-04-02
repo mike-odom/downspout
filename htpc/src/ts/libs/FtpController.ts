@@ -20,8 +20,6 @@ class FtpController {
             pass: ftpConfig.password || "@anonymous"
         });
 
-        //ftp.timeout =
-
         return ftp;
     }
 
@@ -31,9 +29,12 @@ class FtpController {
      * @returns {JSFtp}
      */
     public static ftpForDownloading() {
-        let ftp = ftpConnectionPool.pop() || this.newJSFtp();
+        //The pool is closed for repairs.
+        // let ftp = ftpConnectionPool.pop() || this.newJSFtp();
+        //
+        // return ftp;
 
-        return ftp;
+        return this.newJSFtp();
     }
 
     /**
@@ -42,7 +43,7 @@ class FtpController {
      * @param ftp {JSFtp}
      */
     public static doneWithFtpObj(ftp) {
-        ftpConnectionPool.push(ftp);
+        //ftpConnectionPool.push(ftp);
     }
 
 }
