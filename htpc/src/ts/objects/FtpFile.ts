@@ -95,12 +95,16 @@ class FtpFile {
         }
     }
 
+    public equals(otherFile: FtpFile) : boolean {
+        return this.fullPath == otherFile.fullPath;
+    }
+
     /**
      *
      * @param {FtpFile} a
      * @param {FtpFile} b
      */
-    sortNewestFirst = function (a, b) {
+    static sortNewestFirst = function (a, b) {
         if (a._timestamp > b._timestamp) {
             return -1;
         }
