@@ -5,20 +5,20 @@ const logger : winston.LoggerInstance = require('./Logger');
 const fs = require('fs');
 const config = require('../Config');
 const FtpFile = require('../objects/FtpFile');
-import mkdirp = require('mkdirp');
 import mongoose = require('mongoose');
 import {Socket} from "net";
 const SyncLogItem = require('./../objects/SyncLogItem');
 
-const FTPController = require('./FtpController');
-const FTPScanner = require('./FtpScanner');
+const FtpController = require('./FtpController');
+const FtpScanner = require('./FtpScanner');
+const FtpDownloader = require('./FtpDownloader');
 
 //TODO: Create new SyncController for every time we try to sync.
 // This will prevent stuff like the FTP completed callbck from breaking when trying to access the downloadQueue which is missing.
 class SyncController {
     private downloadQueue: FtpFile[] = [];
     private completedList: FtpFile[] = [];
-    private ftpScanner = new FTPScanner(this.scanCompleteCallback.bind(this));
+    private ftpScanner = new FtpScanner(this.scanCompleteCallback.bind(this));
 
     public syncRequest() {
         logger.info("syncRequest");
@@ -148,88 +148,16 @@ class SyncController {
      * Download another item in the queue if it exists
      */
     private downloadNextInQueue() {
-        let self = this;
-        
-        let file : FtpFile = this.getNextFileToDownload();
+        let file : FtpFile;
+        while ( file = this.getNextFileToDownload()) {
+            let localDirectory = this.getDestinationDirectory(file);
 
-        if (!file) {
-            logger.info("No more files left in the queue to process.");
-            return;
+            let ftpDownloader = new FtpDownloader(file, localDirectory);
+            ftpDownloader.start(this.downloadDone.bind(this));
         }
-
-        file.downloading = true;
-
-        let localDirectory = this.getDestinationDirectory(file);
-
-        logger.info("mkdirp", localDirectory);
-
-        //Create the full path. jsftp will not error if the directory doesn't exist.
-        mkdirp(localDirectory, function (err) {
-            if (err) logger.error(err);
-            else logger.info('dir created')
-        });
-
-        let localPath = FtpFile.appendSlash(localDirectory) + file.name;
-
-        let ftp = FTPController.ftpForDownloading();
-
-        function ftpDownloadError(err) {
-            logger.error("Error downloading file\r\n", err);
-
-            file.downloading = false;
-
-            FTPController.doneWithFtpObj(ftp);
-            self.downloadNextInQueue();
-        }
-
-        ftp.on('error', ftpDownloadError);
-        ftp.on('timeout', ftpDownloadError);
-
-        logger.info("Downloading", file.fullPath);
-
-
-        // Retrieve the file using async streams
-        ftp.getGetSocket(file.fullPath, function(err: Error, sock: Socket) {
-            if (err) {
-                ftpDownloadError(err);
-                return;
-            }
-
-            var fd = fs.openSync(localPath, "w+");
-
-            // `sock` is a stream. attach events to it.
-            sock.on("data", function(p) {
-                fs.writeSync(fd, p, 0, p.length, null);
-
-                var data = {
-                    filename: file.fullPath,
-                    transferred: sock.bytesRead,
-                };
-                self.ftpProgressUpdate(data);
-            });
-            sock.on("close", function(err) {
-                if (err) {
-                    ftpDownloadError(err);
-                    return;
-                }
-
-                logger.info("File downloaded succesfully", localPath);
-
-                FTPController.doneWithFtpObj(ftp);
-                fs.closeSync(fd);
-
-                self.downloadNextInQueue();
-            });
-
-            // The sock stream is paused. Call resume() on it to start reading.
-            sock.resume();
-
-            // Kick off the next download if we're ready for it.
-            self.downloadNextInQueue();
-        });
     }
 
-    private fileDownloadedSuccessfully(file) {
+    private downloadDone(err, file) {
         if (config.deleteRemoteFiles) {
             this.deleteRemoteFile(file);
         }
@@ -253,7 +181,7 @@ class SyncController {
         };
 
         //Delete the symlink on the server
-        let deleteFtp = FTPController.newJSFtp();
+        let deleteFtp = FtpController.newJSFtp();
         deleteFtp.on('error', deleteFtpError);
         deleteFtp.on('timeout', deleteFtpError);
 
@@ -264,21 +192,6 @@ class SyncController {
                 logger.info("Deleted symlink", file.actualPath);
             }
         });
-    }
-
-    /**
-     * Callback from jsftp to let us know file download progress
-     *
-     * @param data - { transfered, total, filename, action (get/put) }
-     */
-    private ftpProgressUpdate(data) {
-        for (let file of this.downloadQueue) {
-            if (file.fullPath == data.filename) {
-                file.transferred = data.transferred;
-
-                break;
-            }
-        }
     }
 }
 
