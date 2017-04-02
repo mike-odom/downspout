@@ -7,7 +7,7 @@ const ftpConfig = appConfig.seedboxFtp;
 /** @type {JSFtp[]} */
 const ftpConnectionPool = [];
 
-class FTPController {
+class FtpController {
 
     /**
      * Create a new JSFtp instance with our config info
@@ -48,4 +48,4 @@ class FTPController {
 }
 
 //Is this proper to do this with a singleton in node? idk node newb
-module.exports = FTPController;
+module.exports = FtpController;

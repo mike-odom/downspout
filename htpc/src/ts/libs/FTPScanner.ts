@@ -8,7 +8,7 @@ const FtpFile = require('../objects/FtpFile');
 
 type ScanCompleteCallbackFunction = (err: Error, files: FtpFile[]) => void;
 
-class FTPScanner {
+class FtpScanner {
     private scanning = false;
     private syncRequestedWhileScanning = false;
 
@@ -156,4 +156,4 @@ class FTPScanner {
     }
 }
 
-module.exports = FTPScanner;
+module.exports = FtpScanner;
