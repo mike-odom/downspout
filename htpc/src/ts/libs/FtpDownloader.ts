@@ -30,7 +30,7 @@ class FtpDownloader {
         logger.info("mkdirp", localDirectory);
 
         //Create the full path. jsftp will not error if the directory doesn't exist.
-        mkdirp(localDirectory, function (err) {
+        mkdirp.sync(localDirectory, function (err) {
             if (err) logger.error(err);
             else logger.info('dir created')
         });
@@ -41,7 +41,7 @@ class FtpDownloader {
 
         var ftp = FtpController.ftpForDownloading();
 
-        let fd = fs.openSync(localPath, "w+");
+        let fd;
 
         let downloadDone = function(err) {
             if (err) {
@@ -50,7 +50,10 @@ class FtpDownloader {
             }
 
             FtpController.doneWithFtpObj(ftp);
-            fs.closeSync(fd);
+
+            if (fd) {
+                fs.closeSync(fd);
+            }
 
             self._file.downloading = false;
 
@@ -67,6 +70,8 @@ class FtpDownloader {
                 downloadDone(err);
                 return;
             }
+
+            fd = fs.openSync(localPath, "w+");
 
             // `sock` is a stream. attach events to it.
             sock.on("data", function(p) {
