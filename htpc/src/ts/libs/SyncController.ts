@@ -44,7 +44,7 @@ class SyncController {
         };
     }
 
-    public scanCompleteCallback(err: Error, scannedQueue: FtpFile[]) {
+    public scanCompleteCallback(err: Error, scannedQueue: FtpFile[], ftp) {
         var self = this;
 
         if (err) {
@@ -55,20 +55,52 @@ class SyncController {
         let originalDownloadQueueLength = self.downloadQueue.length;
         
         // Merge downloadQueue & scannedQueue
+        let nonDupes = [];
+        // Merge downloadQueue & scannedQueue
         for (var t = 0; t < scannedQueue.length; t++) {
             var testFile = scannedQueue[t];
-            for (var n = 0; n < originalDownloadQueueLength; n++) {
+            for (var n = 0; n < self.downloadQueue.length; n++) {
                 if (testFile.equals(self.downloadQueue[n])) {
                     testFile = null;
                     break;
                 }
             }
             if (testFile) {
-                self.downloadQueue.push(testFile);
+                nonDupes.push(testFile);
             }
         }
 
+        self.updateFileSizes(nonDupes, ftp);
+
+        self.downloadQueue = self.downloadQueue.concat(nonDupes);
+
         self.downloadNextInQueue();
+    }
+
+    /**
+     * The recursive directory search only gives us symlinks. We need to see how big the actual files are one by one.
+     *
+     * This is fine to not block because it's only updating the file sizes to show on the UI and not any logic
+     *
+     * @param ftp
+     * @param list
+     */
+    private updateFileSizes(list: FtpFile[], ftp) {
+        for (let file of list) {
+            /** @type {FtpFile} */
+
+            if (file.isSymLink) {
+                ftp.ls(file.fullPath, function (err, data) {
+                    if (err || data.length != 1) {
+                        logger.log("Error getting data for", file.fullPath);
+                        return;
+                    }
+
+                    logger.info("Got target data", data[0]);
+                    file.targetData(data[0]);
+                });
+            }
+        }
     }
 
     /**
@@ -158,14 +190,16 @@ class SyncController {
     }
 
     private downloadDone(err, file) {
-        if (config.deleteRemoteFiles) {
+        if (!err && config.deleteRemoteFiles) {
             this.deleteRemoteFile(file);
         }
 
         //TODO: Delete __seedbox_sync_folder__ file
         //TODO: Tell media server that files have been updated. If we've finished a section.
 
-        this.completedList.push(file);
+        if (!err) {
+            this.completedList.push(file);
+        }
 
         //Done, remove from queue.
         this.removeFileFromQueue(file, this.downloadQueue);

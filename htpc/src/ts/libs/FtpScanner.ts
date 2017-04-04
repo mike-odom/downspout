@@ -6,7 +6,7 @@ const config = require('../Config');
 const FTPController = require('./FtpController');
 const FtpFile = require('../objects/FtpFile');
 
-type ScanCompleteCallbackFunction = (err: Error, files: FtpFile[]) => void;
+type ScanCompleteCallbackFunction = (err: Error, files: FtpFile[], ftp) => void;
 
 class FtpScanner {
     private scanning = false;
@@ -45,12 +45,12 @@ class FtpScanner {
 
         let syncFolder = config.seedboxFtp.syncRoot;
 
+        let ftp = FTPController.newJSFtp();
+
         function ftpScanError(err) {
             logger.error("Error trying to scan FTP", err);
-            self.scanComplete(err, null);
+            self.scanComplete(err, null, ftp);
         }
-
-        let ftp = FTPController.newJSFtp();
 
         //jsftp does not send these errors to the callback so we must handle them.
         ftp.on('error', ftpScanError);
@@ -66,17 +66,13 @@ class FtpScanner {
             //TODO: Flatten out this list and group directories with __seedbox_sync_directory__ files in them
             let downloadQueue = self.processFilesJSON(data, syncFolder, 20);
 
-            self.updateFileSizes(ftp, downloadQueue);
-
             //TODO: Sort each group's contents by date
             downloadQueue.sort(FtpFile.sortNewestFirst);
-
-            //logger.info(downloadQueue);
 
             //TODO: Sort the groups by date
 
             // Got our list of files, send it back
-            self.scanComplete(null, downloadQueue);
+            self.scanComplete(null, downloadQueue, ftp);
         });
     }
 
@@ -115,38 +111,12 @@ class FtpScanner {
         return outList;
     }
 
-    /**
-     * The recursive directory search only gives us symlinks. We need to see how big the actual files are one by one.
-     *
-     * This is fine to not block because it's only updating the file sizes to show on the UI and not any logic
-     *
-     * @param ftp
-     * @param list
-     */
-    private updateFileSizes(ftp, list) {
-        for (let file of list) {
-            /** @type {FtpFile} */
-
-            if (file.isSymLink) {
-                ftp.ls(file.fullPath, function (err, data) {
-                    if (err || data.length != 1) {
-                        logger.log("Error getting data for", file.fullPath);
-                        return;
-                    }
-
-                    logger.info("Got target data", data[0]);
-                    file.setTargetData(data[0]);
-                });
-            }
-        }
-    }
-
-    private scanComplete(err: Error, files : FtpFile[]) {
+    private scanComplete(err: Error, files : FtpFile[], ftp) {
         this.scanning = false;
 
         logger.info("FTP Scan completed");
 
-        this.scanCompleteCallbackFunc(err, files);
+        this.scanCompleteCallbackFunc(err, files, ftp);
 
         this.resetPollingTimeout();
     }

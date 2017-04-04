@@ -46,7 +46,7 @@ class FtpDownloader {
         let downloadDone = function(err) {
             if (err) {
                 logger.error("Error downloading file\r\n", err);
-                self._downloadDoneCallback(err);
+                self._downloadDoneCallback(err, file);
             }
 
             FtpController.doneWithFtpObj(ftp);
