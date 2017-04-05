@@ -1,3 +1,5 @@
+const UUID = require('uuid/v1');
+
 class FtpFile {
     public static FTP_TYPE_FILE = 0;
     public static FTP_TYPE_DIRECTORY = 1;
@@ -6,6 +8,11 @@ class FtpFile {
     private _basePath: string;
     private _relativePath: string;
     private _timestamp: number;
+
+    private _destinationRoot: string;
+
+    private _uuid: string;
+
     /** @type FtpData */
     private _data: any;
 
@@ -33,6 +40,14 @@ class FtpFile {
             //Use target if it's a symlink
             FtpFile.appendSlash(this._basePath) + FtpFile.appendSlash(this._relativePath) + this._data.target
             : this.actualPath
+    }
+
+    get destinationRoot(): string {
+        return this._destinationRoot;
+    }
+
+    set destinationRoot(destinationRoot: string) {
+        this._destinationRoot = destinationRoot;
     }
 
     get timestamp(): number {
@@ -77,21 +92,23 @@ class FtpFile {
         this._relativePath = relativePath;
         this._data = ftpData;
         this._timestamp = this._data.time;
+        this._uuid = new UUID();
     }
 
     json() {
         //TODO: Finish this data structure.
         return {
             "filename": this._data.name,
-            "source_root": "/home/odie/deluge-scripts/toUpload",
-            "dest_root": "~/microverse/library/seedbox",
+            "source_root": this._basePath,
+            "dest_root": this._destinationRoot,
             "path": this._relativePath,
             "size": this._targetData ? this._targetData.size : this._data.size,
             "downloaded": this.transferred,
-            "download_rate": this.transferred > 0 ? 56.3 : 0,
+            //TODO: Calculate the actual speed
+            "download_rate": this.transferred > 0 ? 1.21 : 0,
             "status": this.downloading ? "downloading" : "queued",
             "date_added": this._data.time,
-            "uid": "Some unique identifier string per row"
+            "uid": this._uuid,
         }
     }
 

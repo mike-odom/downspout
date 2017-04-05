@@ -25,6 +25,8 @@ class FtpDownloader {
         const file = this._file;
         const localDirectory = this._destinationDirectory;
 
+        file.destinationRoot = localDirectory;
+
         file.downloading = true;
 
         logger.info("mkdirp", localDirectory);
