@@ -3,6 +3,8 @@ config.js
 
 *.log
 
+build/
+
 # JetBrains IDE user settings
 .idea
 

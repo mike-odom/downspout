@@ -1,7 +1,7 @@
 import winston = require('winston');
 const logger : winston.LoggerInstance = require('./libs/Logger');
 
-const config = require('./Config');
+const appConfig = require('./Config');
 
 import express = require('express');
 
@@ -14,17 +14,20 @@ const bodyParser = require('body-parser');
 
 const app = express();
 
+var webpack = require('webpack');
+var webpackConfig = require('../../webpack.config');
+
 const users = require('./routes/users');
 const seedboxCallback = require('./routes/seedboxCallback');
 const status = require('./routes/status');
 
-if ("testFtpServer" in config) {
+if ("testFtpServer" in appConfig) {
     const ftpd = require('ftpd');
 
     //override our settings if the test server is going to be up
-    config.seedboxFtp.host = "127.0.0.1";
-    config.seedboxFtp.user = config.testFtpServer.user;
-    config.seedboxFtp.password = config.testFtpServer.password;
+    appConfig.seedboxFtp.host = "127.0.0.1";
+    appConfig.seedboxFtp.user = appConfig.testFtpServer.user;
+    appConfig.seedboxFtp.password = appConfig.testFtpServer.password;
 
     // // Path to your FTP root
     // ftpd.fsOptions.root = config.testFtpServer.root;
@@ -37,7 +40,7 @@ if ("testFtpServer" in config) {
             return '/';
         },
         getRoot: function () {
-            return process.cwd() + "\\" + config.testFtpServer.localRoot;
+            return process.cwd() + "\\" + appConfig.testFtpServer.localRoot;
         }
     });
 
@@ -91,6 +94,21 @@ app.use(express.static(path.join(__dirname, '../../public')));
 app.use('/', status);
 app.use('/users', users);
 app.use('/seedboxCallback', seedboxCallback);
+
+var compiler = webpack(webpackConfig);
+
+app.use(require('webpack-dev-middleware')(compiler, {
+    noInfo: true,
+    publicPath: webpackConfig.output.publicPath
+}));
+
+app.get('/css/bootstrap.min.css', function (req, res) {
+    res.sendFile(path.join(__dirname, '../../dist/css/bootstrap.min.css'));
+});
+
+// app.get('*', function (req, res) {
+//     res.sendFile(path.join(__dirname, '../../dist/index.html'));
+// });
 
 class HttpError extends Error {
     status: number;
