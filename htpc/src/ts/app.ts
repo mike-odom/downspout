@@ -102,6 +102,10 @@ class HttpError extends Error {
         this.status = status;
     }
 }
+
+app.use('/favicon.ico', function(req, res) {
+   res.status(404).end();
+});
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
     const err = new HttpError('Not Found - ' + req.url, 404);
@@ -116,7 +120,7 @@ app.use(function (err, req, res, next) {
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-    logger.log(err);
+    logger.error(err);
 
     // render the error page
     res.status(err.status || 500);
