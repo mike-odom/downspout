@@ -1,6 +1,7 @@
 import {Socket} from "net";
 import mkdirp = require('mkdirp');
 import fs = require('fs');
+import once = require('once');
 
 const logger = require('./Logger');
 const FtpController = require('./FtpController');
@@ -44,17 +45,32 @@ class FtpDownloader {
         var ftp = FtpController.ftpForDownloading();
 
         let fd;
+        let socket;
 
         let downloadDone = function(err) {
             if (err) {
                 logger.error("Error downloading file\r\n", err);
                 self._downloadDoneCallback(err, file);
+
+                //Make sure no more data can come in
+                if (socket) {
+                    socket.destroy();
+                }
             }
 
             FtpController.doneWithFtpObj(ftp);
 
             if (fd) {
-                fs.closeSync(fd);
+                try {
+                    fs.closeSync(fd);
+                } catch(exception) {
+                    logger.error('Error closing file descriptor.?', exception);
+                    err = exception;
+                }
+            }
+
+            if (!err) {
+                logger.info("File downloaded succesfully", localPath);
             }
 
             self._file.downloading = false;
@@ -62,13 +78,23 @@ class FtpDownloader {
             self._downloadDoneCallback(err, file);
         };
 
+        //There's a bunch of error listeners and one success listener tied to this, only call once.
+        downloadDone = once(downloadDone);
+
 
         ftp.on('error', downloadDone)
-            .on('timeout', downloadDone);
+            .on('timeout', function() {
+                downloadDone('timeout');
+            });
+
+
 
         // Retrieve the file using async streams
         ftp.getGetSocket(file.fullPath, function(err: Error, sock: Socket) {
+            socket = sock;
+            
             if (err) {
+                logger.error('Error calling ftp.getGetSocket');
                 downloadDone(err);
                 return;
             }
@@ -89,8 +115,6 @@ class FtpDownloader {
                     downloadDone(err);
                     return;
                 }
-
-                logger.info("File downloaded succesfully", localPath);
 
                 downloadDone(null)
             });
