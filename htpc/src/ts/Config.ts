@@ -65,6 +65,8 @@ class Config {
      * @type {boolean}
      */
     deleteRemoteFiles = true;
+
+    networkTimeoutInSeconds = 10;
 }
 
 /**

@@ -20,6 +20,8 @@ class FtpController {
             pass: ftpConfig.password || "@anonymous"
         });
 
+        ftp.timeout = appConfig.networkTimeoutInSeconds * 1000;
+
         return ftp;
     }
 
