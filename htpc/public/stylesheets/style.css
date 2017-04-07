@@ -8,72 +8,72 @@ a {
     color: #00B7FF;
 }
 
-div.downloads{
-  width: 50%;
-  min-width: 500px;
-  list-style-type: none;
-  margin: 0 auto;
+div.downloads {
+    width: 50%;
+    min-width: 500px;
+    list-style-type: none;
+    margin: 0 auto;
 }
 
-div.downloads>div.item{
-  width: 80%;
-  margin: 20px auto;
-  box-sizing: border-box;
-  border-radius: 10px;
-  overflow: hidden;
-  background-color: #829496;
-  background-color: #93A1A1;
+div.downloads > div.item {
+    width: 80%;
+    margin: 20px auto;
+    box-sizing: border-box;
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: #829496;
+    background-color: #93A1A1;
 }
 
-.item.downloading{
-  opacity : 1;
+.item.downloading {
+    opacity: 1;
 }
 
-.item.queued{
-  opacity: .75;
+.item.queued {
+    opacity: .75;
 }
 
-.item.completed{
-  opacity: .25;
+.item.completed {
+    opacity: .25;
 }
 
-.downloads>.item>header{
-  width: 100%;
-  font-weight: bold;
-  font-size: 1.4em;
-  box-sizing: border-box;
-  background-color: #647B83;
-  padding: 10px;
-  margin-bottom: 10px;
+.downloads > .item > header {
+    width: 100%;
+    font-weight: bold;
+    font-size: 1.4em;
+    box-sizing: border-box;
+    background-color: #647B83;
+    padding: 10px;
+    margin-bottom: 10px;
 }
 
-.transferInfo{
-  text-align: center;
+.transferInfo {
+    text-align: center;
 }
 
-.progressBar{
-  width: 90%;
-  margin: 0 auto;
-  height: 30px;
-  background-color: #eee;
-  text-align: left;
+.progressBar {
+    width: 90%;
+    margin: 0 auto;
+    height: 30px;
+    background-color: #eee;
+    text-align: left;
 }
 
-.progressBar .bar{
-  background-color: #CA4B16;
-  height: 100%;
-  display: inline-block;
-  vertical-align: middle;
-  text-align: center;
+.progressBar .bar {
+    background-color: #CA4B16;
+    height: 100%;
+    display: inline-block;
+    vertical-align: middle;
+    text-align: center;
 }
 
-.progressBar .bar:before{
-  content: " ";
-  height: 1em;
-  vertical-align: middle;
+.progressBar .bar:before {
+    content: " ";
+    height: 1em;
+    vertical-align: middle;
 }
 
-.progressBar .progressPct{
-  display: inline-block;
-  vertical-align: middle;
+.progressBar .progressPct {
+    display: inline-block;
+    vertical-align: middle;
 }
