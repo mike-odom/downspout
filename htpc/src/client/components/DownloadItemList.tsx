@@ -1,5 +1,6 @@
 import * as React from 'react'
 import {DownloadItem} from "./DownloadItem";
+import {UserNotification} from "./UserNotifications";
 
 const jsonAPI = '/status/ui';
 
@@ -58,6 +59,8 @@ class DownloadItemList extends React.Component<IDownloadItemListProps, IDownload
                         downloads: json["downloads"]
                     });
                 });
+
+                new UserNotification("got response").show();
 
             })
             .catch(function (error) {
