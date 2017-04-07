@@ -16,7 +16,7 @@ const bodyParser = require('body-parser');
 const app = express();
 
 var webpack = require('webpack');
-var webpackConfig = require('../../webpack.config');
+var webpackConfig = require('../../client/webpack.config.js');
 
 const users = require('./routes/users');
 const seedboxCallback = require('./routes/seedboxCallback');
@@ -90,7 +90,7 @@ app.set('view engine', 'handlebars');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, '../../public')));
+app.use(express.static(path.join(__dirname, '../../client/public')));
 
 app.use('/', status);
 app.use('/users', users);
@@ -103,9 +103,9 @@ app.use(require('webpack-dev-middleware')(compiler, {
     publicPath: webpackConfig.output.publicPath
 }));
 
-app.get('/css/bootstrap.min.css', function (req, res) {
-    res.sendFile(path.join(__dirname, '../../dist/css/bootstrap.min.css'));
-});
+// app.get('/css/bootstrap.min.css', function (req, res) {
+//     res.sendFile(path.join(__dirname, '../../dist/css/bootstrap.min.css'));
+// });
 
 // app.get('*', function (req, res) {
 //     res.sendFile(path.join(__dirname, '../../dist/index.html'));

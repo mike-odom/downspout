@@ -3,19 +3,19 @@ var webpack = require('webpack');
 
 module.exports = {
     entry: [
-        './src/client/app.tsx'
+        path.join(__dirname, './src/app.tsx')
     ],
-    devtool: 'eval-source-map',
+    devtool: 'source-map',
     output: {
-        path: path.join(__dirname, 'build/webpack'),
+        path: path.join(__dirname, 'build'),
         filename: 'webpack.js',
         publicPath: '/webpack/'
     },
     module: {
         loaders: [{
             test: /\.tsx$/,
-            loaders: ['awesome-typescript-loader?configFileName=' + path.join(__dirname, 'src/client/tsconfig.json')],
-            include: path.join(__dirname, 'src/client')
+            loaders: ['awesome-typescript-loader?configFileName=' + path.join(__dirname, 'tsconfig.json')],
+            include: path.join(__dirname, 'src')
         }]
     },
     resolve: {
