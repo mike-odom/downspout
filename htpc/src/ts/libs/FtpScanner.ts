@@ -122,6 +122,8 @@ class FtpScanner {
     }
 
     private resetPollingTimeout() {
+        clearTimeout(this.pollingTimeoutId);
+        
         this.pollingTimeoutId = setTimeout(this.scanRequest.bind(this), config.seedboxFtp.pollingIntervalInSeconds * 1000)
     }
 }
