@@ -25,6 +25,7 @@
     "history": "^4.6.1",
     "jsftp": "github:thatodieguy/jsftp",
     "mkdirp": "^0.5.1",
+    "moment": "^2.18.1",
     "mongoose": "latest",
     "morgan": "~1.7.0",
     "npm-run": "^4.1.1",
