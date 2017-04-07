@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import {DownloadItemList} from './Components/DownloadItemList';
+import {DownloadItemList} from './components/DownloadItemList';
 
 //import { Router, IndexRoute, Route, browserHistory } from 'react-router';
 
