@@ -95,8 +95,32 @@ class UserNotification {
 
     show() {
         UserNotificationsController.instance().post(this);
-        console.log('show');
+        
+        return this;
     }
+
+    setUid(uid) {
+        this.uid = uid;
+        return this;
+    }
+
+    setTitle(title) {
+        this.title = title;
+        return this;
+    }
+
+    setMessage(message) {
+        this.message = message;
+        return this;
+    }
+
+    setLevel(level) {
+        this.level = level;
+        return this;
+    }
+
+
+
 }
 
 export { UserNotificationContainer, UserNotificationsController, UserNotification }
