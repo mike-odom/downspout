@@ -2,7 +2,8 @@
   "compilerOptions": {
     "target": "ES6",
     "jsx": "react",
-    "rootDir": "."
+    "rootDir": ".",
+    "moduleResolution": "node"
   },
   "exclude": ["node_modules", "config", "dev_server.js"]
 }
