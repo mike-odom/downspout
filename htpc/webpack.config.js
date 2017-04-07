@@ -17,5 +17,8 @@ module.exports = {
             loaders: ['awesome-typescript-loader?configFileName=' + path.join(__dirname, 'src/client/tsconfig.json')],
             include: path.join(__dirname, 'src/client')
         }]
-    }
+    },
+    resolve: {
+        extensions: ['.js', '.jsx', '.tsx'],
+    },
 };
