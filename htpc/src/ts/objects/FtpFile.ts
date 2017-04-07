@@ -11,7 +11,7 @@ class FtpFile {
 
     private _destinationRoot: string;
 
-    private _uuid: string;
+    private _key: string;
 
     /** @type FtpData */
     private _data: any;
@@ -92,7 +92,7 @@ class FtpFile {
         this._relativePath = relativePath;
         this._data = ftpData;
         this._timestamp = this._data.time;
-        this._uuid = new UUID();
+        this._key = UUID();
     }
 
     json() {
@@ -108,7 +108,7 @@ class FtpFile {
             "download_rate": this.transferred > 0 ? 1.21 : 0,
             "status": this.downloading ? "downloading" : "queued",
             "date_added": this._data.time,
-            "uid": this._uuid,
+            "key": this._key,
         }
     }
 

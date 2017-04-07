@@ -66,7 +66,7 @@ class Config {
      */
     deleteRemoteFiles = true;
 
-    networkTimeoutInSeconds = 10;
+    networkTimeoutInSeconds = 60;
 }
 
 /**
