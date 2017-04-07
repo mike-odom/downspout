@@ -1,18 +1,11 @@
-var React = require('react');
-var ReactDOM = require('react-dom');
-
+import * as React from "react";
+import * as ReactDOM from "react-dom";
 //import { Router, IndexRoute, Route, browserHistory } from 'react-router';
-
 var MyComponent = React.createClass({
     render: function () {
-        return (
-            <div>
-                <h1>asdf</h1><button />
-            </div>
-        );
+        return (React.createElement("div", null,
+            React.createElement("h1", null, "asdf"),
+            React.createElement("button", null)));
     }
 });
-
-ReactDOM.render(<MyComponent />,
-    document.getElementById('app-container')
-);
+ReactDOM.render(React.createElement(MyComponent, null), document.getElementById('app-container'));
