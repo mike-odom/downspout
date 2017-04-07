@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "module": "CommonJS",
-    "target": "ES5",
+    "target": "ES6",
     "alwaysStrict": true,
     "sourceMap": true,
     "rootDir": "src/ts",
@@ -11,6 +11,9 @@
     ]
   },
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "src/client",
+    "public",
+    "build"
   ]
 }

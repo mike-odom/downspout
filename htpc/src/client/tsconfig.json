@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "jsx": "react",
+    "rootDir": "."
+  },
+  "exclude": ["node_modules", "config", "dev_server.js"]
+}
