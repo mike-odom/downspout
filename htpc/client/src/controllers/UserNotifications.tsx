@@ -1,6 +1,7 @@
 import * as React from 'react'
 import * as NotificationSystem from "react-notification-system"
 import { EventEmitter } from 'fbemitter'
+import {NetworkController} from "./NetworkController";
 
 const EVENTS = {
     notification: "notification",
@@ -60,8 +61,6 @@ class UserNotificationContainer extends React.Component<IUserNotificationsProps,
     }
 
     componentWillUnmount() {
-        var controller = UserNotificationsController.instance();
-
         this.listenerSubscriptions.forEach(function (subscription) {
             subscription.remove();
         })
@@ -77,12 +76,20 @@ class UserNotificationsController {
 
     static instance() {
         if (!this._instance) {
-            this._instance = new UserNotificationsController;
+            this._instance = new UserNotificationsController();
         }
         return this._instance;
     }
 
     private eventEmitter: EventEmitter = new EventEmitter();
+
+    private constructor() {
+        NetworkController.instance().addListener(NetworkController.NetworkEvents.notifications, this.onNetworkNotifications.bind(this));
+    }
+
+    onNetworkNotifications(notifications: UserNotification[]) {
+        notifications.forEach(notification => this.post(notification));
+    }
 
     post(notification: UserNotification) {
         console.log('post UserNotification');
@@ -116,7 +123,7 @@ class UserNotification {
         info: 'info'
     };
 
-    constructor(message) {
+    constructor(message?: string) {
         this.message = message;
     }
 
@@ -155,7 +162,19 @@ class UserNotification {
         return this;
     }
 
+    static fromJson(json): UserNotification {
+        var notification = new UserNotification();
 
+        for (let key of json) {
+            if (!json.hasOwnProperty(key)) {
+                continue;
+            }
+
+            notification[key] = json[key];
+        }
+
+        return notification;
+    }
 
 }
 

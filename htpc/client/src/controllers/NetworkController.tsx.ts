@@ -10,9 +10,12 @@ class NetworkController {
         notifications: "notifications"
     };
 
-    private static _instance = new NetworkController();
+    private static _instance;
 
     public static instance() {
+        if (!NetworkController._instance) {
+            NetworkController._instance = new NetworkController();
+        }
         return NetworkController._instance;
     }
     
@@ -22,12 +25,29 @@ class NetworkController {
 
     private emitter: EventEmitter = new EventEmitter();
 
-    constructor() {
+    private dataTransformers = [];
+
+    private constructor() {
         this.updateData();
+        this.setupDataTransformers();
     }
 
     public registerListener(event, callback) {
         this.emitter.addListener(event, callback);
+    }
+
+    private setupDataTransformers() {
+        this.addDataTransformer(NetworkController.NetworkEvents.notifications, function(data) {
+            let result: UserNotification[] = [];
+            data.forEach(function(itemJson) {
+                result.push(UserNotification.fromJson(itemJson));
+            });
+            return result;
+        })
+    }
+
+    private addDataTransformer(event: string, callback) {
+        this.dataTransformers[event] = callback;
     }
 
     private getEventKeysToRequest() {
@@ -63,8 +83,12 @@ class NetworkController {
                         if (!json.hasOwnProperty(key)) {
                             continue;
                         }
+                        let data = json[key];
 
-                        self.emitter.emit(key, json[key]);
+                        if (typeof self.dataTransformers[key] !== undefined) {
+                            data = self.dataTransformers[key](data)
+                        }
+                        self.emitter.emit(key, data);
                     }
                 });
 
