@@ -4,7 +4,7 @@ import { EventEmitter } from 'fbemitter'
 
 const EVENTS = {
     notification: "notification",
-    clearNotification: "clearNotification",
+    removeNotification: "removeNotification",
     clearAll: "clearAll"
 };
 
@@ -30,7 +30,7 @@ class UserNotificationContainer extends React.Component<IUserNotificationsProps,
 
     }
 
-    private notificationEvent(notification: UserNotification) {
+    private onNotification(notification: UserNotification) {
         console.log('got notification', notification);
 
         this.notificationSystem.addNotification({
@@ -41,10 +41,20 @@ class UserNotificationContainer extends React.Component<IUserNotificationsProps,
         })
     }
 
+    private onRemoveNotification(key) {
+        this.notificationSystem.removeNotification(key);
+    }
+
+    private onClearAll() {
+        this.notificationSystem.clearNotifications();
+    }
+
     componentWillMount() {
         var controller = UserNotificationsController.instance();
 
-        this.listenerSubscriptions.push(controller.addListener(EVENTS.notification, this.notificationEvent.bind(this)));
+        this.listenerSubscriptions.push(controller.addListener(EVENTS.notification, this.onNotification.bind(this)));
+        this.listenerSubscriptions.push(controller.addListener(EVENTS.removeNotification, this.onRemoveNotification.bind(this)));
+        this.listenerSubscriptions.push(controller.addListener(EVENTS.clearAll, this.onClearAll.bind(this)));
     }
 
     componentWillUnmount() {
@@ -75,6 +85,16 @@ class UserNotificationsController {
     post(notification: UserNotification) {
         console.log('post UserNotification');
         this.eventEmitter.emit(EVENTS.notification, notification);
+    }
+
+    clear(key) {
+        console.log('clear UserNotification');
+        this.eventEmitter.emit(EVENTS.clearAll, key);
+    }
+
+    clearAll() {
+        console.log('clearAll UserNotification');
+        this.eventEmitter.emit(EVENTS.clearAll);
     }
 
     addListener(event, listener) {
