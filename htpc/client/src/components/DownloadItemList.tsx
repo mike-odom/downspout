@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {DownloadItem} from "./DownloadItem";
-import {UserNotification} from "./UserNotifications";
+import {UserNotification} from "../controllers/UserNotifications";
 
 const jsonAPI = '/status/ui';
 

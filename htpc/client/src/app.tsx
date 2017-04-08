@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
 import {DownloadItemList} from './components/DownloadItemList';
-import {UserNotificationContainer} from "./components/UserNotifications";
+import {UserNotificationContainer} from "./controllers/UserNotifications";
 
 var jsx = (
     <div>
