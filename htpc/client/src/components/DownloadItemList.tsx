@@ -61,8 +61,7 @@ class DownloadItemList extends React.Component<IDownloadItemListProps, IDownload
                         downloads: json["downloads"]
                     });
                 });
-
-                new UserNotification("got response").show();
+                
                 self.clearTimeout();
             })
             .catch(function (error) {
