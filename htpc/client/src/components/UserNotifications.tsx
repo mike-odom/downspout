@@ -2,6 +2,12 @@ import * as React from 'react'
 import * as NotificationSystem from "react-notification-system"
 import { EventEmitter } from 'fbemitter'
 
+const EVENTS = {
+    notification: "notification",
+    clearNotification: "clearNotification",
+    clearAll: "clearAll"
+};
+
 interface IUserNotificationsProps {
 
 }
@@ -17,14 +23,14 @@ class UserNotificationContainer extends React.Component<IUserNotificationsProps,
 
     private notificationSystem;
 
-    private listenerSubscription;
+    private listenerSubscriptions: any[] = [];
     
     constructor(props) {
         super(props);
 
     }
 
-    notificationListener(notification: UserNotification) {
+    private notificationEvent(notification: UserNotification) {
         console.log('got notification', notification);
 
         this.notificationSystem.addNotification({
@@ -36,11 +42,17 @@ class UserNotificationContainer extends React.Component<IUserNotificationsProps,
     }
 
     componentWillMount() {
-        this.listenerSubscription = UserNotificationsController.instance().registerListener(this.notificationListener.bind(this));
+        var controller = UserNotificationsController.instance();
+
+        this.listenerSubscriptions.push(controller.addListener(EVENTS.notification, this.notificationEvent.bind(this)));
     }
 
     componentWillUnmount() {
-        this.listenerSubscription.remove();
+        var controller = UserNotificationsController.instance();
+
+        this.listenerSubscriptions.forEach(function (subscription) {
+            subscription.remove();
+        })
     }
 
     render() {
@@ -49,7 +61,6 @@ class UserNotificationContainer extends React.Component<IUserNotificationsProps,
 }
 
 class UserNotificationsController {
-    static readonly EVENT = 'notification';
     static _instance: UserNotificationsController;
 
     static instance() {
@@ -59,20 +70,16 @@ class UserNotificationsController {
         return this._instance;
     }
 
-    private emitter;
-
-    constructor() {
-        this.emitter = new EventEmitter();
-    }
+    private eventEmitter: EventEmitter = new EventEmitter();
 
     post(notification: UserNotification) {
-        this.emitter.emit(UserNotificationsController.EVENT, notification);
-        console.log('post');
+        console.log('post UserNotification');
+        this.eventEmitter.emit(EVENTS.notification, notification);
     }
 
-    registerListener(listener) {
-        console.log('register');
-        return this.emitter.addListener(UserNotificationsController.EVENT, listener);
+    addListener(event, listener) {
+        console.log('addListener', event);
+        return this.eventEmitter.addListener(event, listener);
     }
 }
 
@@ -95,7 +102,7 @@ class UserNotification {
 
     show() {
         UserNotificationsController.instance().post(this);
-        
+
         return this;
     }
 
