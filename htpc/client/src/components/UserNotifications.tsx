@@ -21,7 +21,7 @@ interface IUserNotificationsState {
  */
 class UserNotificationContainer extends React.Component<IUserNotificationsProps, IUserNotificationsState> {
 
-    private notificationSystem;
+    private notificationSystem: NotificationSystem;
 
     private listenerSubscriptions: any[] = [];
     
@@ -37,7 +37,9 @@ class UserNotificationContainer extends React.Component<IUserNotificationsProps,
             title: notification.title,
             message: notification.message,
             uid: notification.uid,
-            level: notification.level
+            level: notification.level,
+            autoDismiss: notification.sticksAround ? 0 : 5, //Stay on screen for X seconds
+            dismissible: !notification.sticksAround
         })
     }
 
@@ -87,23 +89,21 @@ class UserNotificationsController {
         this.eventEmitter.emit(EVENTS.notification, notification);
     }
 
-    clear(key) {
-        console.log('clear UserNotification');
-        this.eventEmitter.emit(EVENTS.clearAll, key);
+    remove(key: UserNotification | string) {
+        this.eventEmitter.emit(EVENTS.removeNotification, key);
     }
 
     clearAll() {
-        console.log('clearAll UserNotification');
         this.eventEmitter.emit(EVENTS.clearAll);
     }
 
     addListener(event, listener) {
-        console.log('addListener', event);
         return this.eventEmitter.addListener(event, listener);
     }
 }
 
 class UserNotification {
+    public sticksAround: boolean;
     public title;
     public message;
     public uid;
@@ -126,6 +126,10 @@ class UserNotification {
         return this;
     }
 
+    remove() {
+        UserNotificationsController.instance().remove(this);
+    }
+
     setUid(uid) {
         this.uid = uid;
         return this;
@@ -143,6 +147,11 @@ class UserNotification {
 
     setLevel(level) {
         this.level = level;
+        return this;
+    }
+
+    setSticksAround(sticksAround) {
+        this.sticksAround = sticksAround;
         return this;
     }
 
