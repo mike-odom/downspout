@@ -15,7 +15,7 @@ interface IDownloadItemListState {
 class DownloadItemList extends React.Component<IDownloadItemListProps, IDownloadItemListState> {
     private timer;
 
-    private timeoutNotification;
+    private timeoutNotification: UserNotification;
 
     constructor(props: IDownloadItemListProps) {
         super(props);
@@ -63,22 +63,32 @@ class DownloadItemList extends React.Component<IDownloadItemListProps, IDownload
                 });
 
                 new UserNotification("got response").show();
-
+                self.clearTimeout();
             })
             .catch(function (error) {
                 console.log(error);
 
-                this.timeoutNotification = new UserNotification("No response from server")
-                    .setUid("no response")
-                    .setLevel(UserNotification.LEVELS.error)
-                    .show();
-
-
+                self.showTimeout();
             })
             .then(function() {
                 console.log('timer set');
                 self.timer = setTimeout(self.updateData.bind(self), 1000);
             })
+    }
+
+    private showTimeout() {
+        this.timeoutNotification = new UserNotification("No response from server")
+            .setUid("no response")
+            .setLevel(UserNotification.LEVELS.error)
+            .setSticksAround(true)
+            .show();
+    }
+
+    private clearTimeout() {
+        if (this.timeoutNotification) {
+            this.timeoutNotification.remove();
+            this.timeoutNotification = null;
+        }
     }
 }
 
