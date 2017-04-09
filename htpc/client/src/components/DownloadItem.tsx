@@ -1,9 +1,9 @@
 import * as React from 'react';
 import {ProgressBar} from "./ProgressBar";
-import {DownloadObject} from "../models/DownloadObject";
+import {DownloadModel} from "../../../shared/models/DownloadModel";
 
 interface IDownloadItemProps {
-    download: DownloadObject;
+    download: DownloadModel;
 }
 
 interface IDownloadItemState {

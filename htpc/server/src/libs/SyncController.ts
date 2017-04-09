@@ -4,8 +4,8 @@ const logger : winston.LoggerInstance = require('./Logger');
 
 const fs = require('fs');
 const config = require('../Config');
-const FtpFile = require('../objects/FtpFile');
 import mongoose = require('mongoose');
+import {FtpFile} from "../objects/FtpFile";
 const SyncLogItem = require('./../objects/SyncLogItem');
 
 const FtpController = require('./FtpController');

@@ -1,3 +1,4 @@
+import {DownloadModel} from "../../../shared/models/DownloadModel";
 const UUID = require('uuid/v1');
 
 class FtpFile {
@@ -97,19 +98,17 @@ class FtpFile {
 
     json() {
         //TODO: Finish this data structure.
-        return {
-            "filename": this._data.name,
-            "sourceRoot": this._basePath,
-            "destRoot": this._destinationRoot,
-            "path": this._relativePath,
-            "size": this._targetData ? this._targetData.size : this._data.size,
-            "downloaded": this.transferred,
-            //TODO: Calculate the actual speed
-            "downloadRate": this.transferred > 0 ? 1.21 : 0,
-            "status": this.downloading ? "downloading" : "queued",
-            "dateAdded": this._data.time,
-            "key": this._key,
-        }
+        var model = new DownloadModel();
+        model.filename = this._data.name;
+        model.sourceRoot = this._basePath;
+        model.destRoot = this._destinationRoot;
+        model.path = this._relativePath;
+        model.downloadRate = this.transferred > 0 ? 1.21 : 0;
+        model.status = this.downloading ? "downloading" : "queued";
+        model.dateAdded = this._data.time;
+        model.key = this._key;
+
+        return model;
     }
 
     public equals(otherFile: FtpFile) : boolean {
@@ -141,4 +140,4 @@ class FtpFile {
     };
 }
 
-module.exports = FtpFile;
+export { FtpFile }

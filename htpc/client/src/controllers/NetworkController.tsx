@@ -1,7 +1,8 @@
 import { UserNotification } from "./UserNotifications";
 import { EventEmitter } from 'fbemitter'
 import {DownloadItem} from "../components/DownloadItem";
-import {DownloadObject} from "../models/DownloadObject";
+import {DownloadModel} from "../../../shared/models/DownloadModel";
+import {BaseModel} from "../../../shared/models/BaseModel";
 
 const API_CALLBACK = '/status/ui';
 
@@ -50,11 +51,7 @@ class NetworkController {
         });
 
         this.addDataTransformer(NetworkController.NetworkEvents.downloads, function(data) {
-            let result: DownloadObject[] = [];
-            data.forEach(function(itemJson) {
-                result.push(DownloadObject.fromJson(itemJson));
-            });
-            return result;
+            return BaseModel.fromJsonArray(data, DownloadModel.create);
         });
     }
 
