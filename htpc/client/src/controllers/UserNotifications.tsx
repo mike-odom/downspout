@@ -165,7 +165,7 @@ class UserNotification {
     static fromJson(json): UserNotification {
         var notification = new UserNotification();
 
-        for (let key of json) {
+        for (let key in json) {
             if (!json.hasOwnProperty(key)) {
                 continue;
             }

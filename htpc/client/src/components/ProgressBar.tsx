@@ -1,9 +1,10 @@
 import * as React from 'react';
+import {DownloadObject} from "../models/DownloadObject";
 
 const SIZES = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
 
 interface IProgressBarProps {
-    download: any;
+    download: DownloadObject;
 }
 
 interface IProgressBarState {
@@ -51,7 +52,7 @@ class ProgressBar extends React.Component<IProgressBarProps, IProgressBarState> 
     }
 
     speedUnits() {
-        var bytes = this.props.download.download_rate;
+        var bytes = this.props.download.downloadRate;
         if (bytes == 0) return '0 bytes';
         var k = 1000,
             dm = 1;

@@ -99,15 +99,15 @@ class FtpFile {
         //TODO: Finish this data structure.
         return {
             "filename": this._data.name,
-            "source_root": this._basePath,
-            "dest_root": this._destinationRoot,
+            "sourceRoot": this._basePath,
+            "destRoot": this._destinationRoot,
             "path": this._relativePath,
             "size": this._targetData ? this._targetData.size : this._data.size,
             "downloaded": this.transferred,
             //TODO: Calculate the actual speed
-            "download_rate": this.transferred > 0 ? 1.21 : 0,
+            "downloadRate": this.transferred > 0 ? 1.21 : 0,
             "status": this.downloading ? "downloading" : "queued",
-            "date_added": this._data.time,
+            "dateAdded": this._data.time,
             "key": this._key,
         }
     }
