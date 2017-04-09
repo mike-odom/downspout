@@ -13,7 +13,7 @@ module.exports = {
     },
     module: {
         loaders: [{
-            test: /\.tsx$/,
+            test: /\.tsx|.ts$/,
             loaders: ['awesome-typescript-loader?configFileName=' + path.join(__dirname, 'tsconfig.json')],
             include: path.join(__dirname, 'src')
         }]

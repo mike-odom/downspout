@@ -3,6 +3,7 @@
     "target": "ES6",
     "jsx": "react",
     "rootDir": "src",
+    "outDir": "build",
     "moduleResolution": "node"
   },
   "exclude": ["node_modules", "config", "dev_server.js", "src/ts"]
