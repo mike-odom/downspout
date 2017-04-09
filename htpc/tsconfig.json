@@ -5,7 +5,6 @@
     "target": "ES6",
     "alwaysStrict": true,
     "sourceMap": true,
-    "rootDir": "",
     "outDir": "server/build"
   },
   "include": [
