@@ -16,7 +16,14 @@ const bodyParser = require('body-parser');
 const app = express();
 
 var webpack = require('webpack');
-var webpackConfig = require('../../client/webpack.config.js');
+
+//This feels ghetto, it's because we're deep into the build folders.
+const clientRoot = "../../../../client/";
+
+var webpackConfig = require(path.join(clientRoot, 'webpack.config.js'));
+
+//working
+//var webpackConfig = require('../../../../client/webpack.config.js');
 
 const users = require('./routes/users');
 const seedboxCallback = require('./routes/seedboxCallback');
@@ -90,7 +97,7 @@ app.set('view engine', 'handlebars');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, '../../client/public')));
+app.use(express.static(path.join(__dirname, clientRoot, 'public')));
 
 app.use('/', status);
 app.use('/users', users);

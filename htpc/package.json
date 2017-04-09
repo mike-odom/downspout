@@ -5,7 +5,8 @@
   "scripts": {
     "start": "npm run build && npm run execute",
     "build": "tsc",
-    "execute": "node server/build/bin/www.js"
+    "execute": "node server/build/server/src/bin/www.js",
+    "clean": "rm -rf server/build/* && rm -rf client/build/*"
   },
   "dependencies": {
     "async": "latest",
