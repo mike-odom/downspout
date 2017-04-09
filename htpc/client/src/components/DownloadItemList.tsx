@@ -2,13 +2,13 @@ import * as React from 'react'
 import {DownloadItem} from "./DownloadItem";
 import {UserNotification} from "../controllers/UserNotifications";
 import {NetworkController} from "../controllers/NetworkController";
-import {DownloadObject} from "../models/DownloadObject";
+import {DownloadModel} from "../../../shared/models/DownloadModel";
 
 interface IDownloadItemListProps {
 
 }
 interface IDownloadItemListState {
-    downloads: DownloadObject[]
+    downloads: DownloadModel[]
 }
 
 class DownloadItemList extends React.Component<IDownloadItemListProps, IDownloadItemListState> {

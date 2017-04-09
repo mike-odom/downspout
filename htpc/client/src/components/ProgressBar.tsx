@@ -1,10 +1,10 @@
 import * as React from 'react';
-import {DownloadObject} from "../models/DownloadObject";
+import {DownloadModel} from "../../../shared/models/DownloadModel";
 
 const SIZES = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
 
 interface IProgressBarProps {
-    download: DownloadObject;
+    download: DownloadModel;
 }
 
 interface IProgressBarState {

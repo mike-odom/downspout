@@ -4,10 +4,11 @@
     "moduleResolution": "node",
     "target": "ES6",
     "jsx": "react",
-    "rootDir": "src",
+    "rootDir": "../",
     "outDir": "build"
   },
   "include": [
-    "src"
+    "src",
+    "../shared"
   ]
 }

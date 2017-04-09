@@ -1,10 +1,11 @@
 import * as ts from "typescript/lib/tsserverlibrary";
 import Err = ts.server.Msg.Err;
+import {FtpFile} from "../objects/FtpFile";
+
 const logger = require('./Logger');
 const config = require('../Config');
 
 const FTPController = require('./FtpController');
-const FtpFile = require('../objects/FtpFile');
 
 type ScanCompleteCallbackFunction = (err: Error, files: FtpFile[], ftp) => void;
 

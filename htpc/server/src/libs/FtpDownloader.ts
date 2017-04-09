@@ -2,10 +2,10 @@ import {Socket} from "net";
 import mkdirp = require('mkdirp');
 import fs = require('fs');
 import once = require('once');
+import {FtpFile} from "../objects/FtpFile";
 
 const logger = require('./Logger');
 const FtpController = require('./FtpController');
-const FtpFile = require('../objects/FtpFile');
 
 class FtpDownloader {
     private _file: FtpFile;

@@ -5,10 +5,11 @@
     "target": "ES6",
     "alwaysStrict": true,
     "sourceMap": true,
-    "rootDir": "server/src",
+    "rootDir": "",
     "outDir": "server/build"
   },
   "include": [
-    "server/src"
+    "server/src",
+    "shared/models"
   ]
 }
