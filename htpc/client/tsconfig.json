@@ -4,7 +4,8 @@
     "jsx": "react",
     "rootDir": "src",
     "outDir": "build",
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "module": "amd"
   },
-  "exclude": ["node_modules", "config", "dev_server.js", "src/ts"]
+  "exclude": ["node_modules", "config", "dev_server.js", "../server/src"]
 }

@@ -1,17 +1,23 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",
+    "module": "commonjs",
     "target": "ES6",
     "alwaysStrict": true,
     "sourceMap": true,
     "rootDir": "server/src",
+    "outDir": "server/build",
     "moduleResolution": "node",
+    "types": [
+      // add node as an option
+      "node"
+    ],
     "typeRoots": [
       "node_modules/@types"
     ]
   },
   "exclude": [
     "node_modules",
-    "client"
+    "client",
+    "server/build"
   ]
 }
