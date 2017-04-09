@@ -5,7 +5,7 @@
   "scripts": {
     "start": "npm run build && npm run execute",
     "build": "tsc",
-    "execute": "npm-run ts-node ./server/src/bin/www.ts"
+    "execute": "node server/build/bin/www.js"
   },
   "dependencies": {
     "async": "latest",
@@ -37,7 +37,6 @@
     "react-router": "^4.0.0",
     "react-stormpath": "^2.0.1",
     "serve-favicon": "~2.3.0",
-    "ts-node": "^2.1.0",
     "typescript": "^2.2.1",
     "upath": "^0.2.0",
     "uuid": "^3.0.1",

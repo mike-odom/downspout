@@ -1,11 +1,13 @@
 {
   "compilerOptions": {
+    "module": "amd",
+    "moduleResolution": "node",
     "target": "ES6",
     "jsx": "react",
     "rootDir": "src",
-    "outDir": "build",
-    "moduleResolution": "node",
-    "module": "amd"
+    "outDir": "build"
   },
-  "exclude": ["node_modules", "config", "dev_server.js", "../server/src"]
+  "include": [
+    "src"
+  ]
 }
