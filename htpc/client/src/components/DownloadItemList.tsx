@@ -1,13 +1,14 @@
 import * as React from 'react'
 import {DownloadItem} from "./DownloadItem";
 import {UserNotification} from "../controllers/UserNotifications";
-import {NetworkController} from "../controllers/NetworkController.tsx";
+import {NetworkController} from "../controllers/NetworkController";
+import {DownloadObject} from "../models/DownloadObject";
 
 interface IDownloadItemListProps {
 
 }
 interface IDownloadItemListState {
-    downloads: any[]
+    downloads: DownloadObject[]
 }
 
 class DownloadItemList extends React.Component<IDownloadItemListProps, IDownloadItemListState> {
@@ -40,7 +41,7 @@ class DownloadItemList extends React.Component<IDownloadItemListProps, IDownload
     private networkEmitterSubscription;
 
     componentDidMount() {
-        this.networkEmitterSubscription = NetworkController.instance().registerListener(
+        this.networkEmitterSubscription = NetworkController.instance().addListener(
             NetworkController.NetworkEvents.downloads,
             this.onDownloadList.bind(this)
         );

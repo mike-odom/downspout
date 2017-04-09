@@ -1,5 +1,7 @@
 import { UserNotification } from "./UserNotifications";
 import { EventEmitter } from 'fbemitter'
+import {DownloadItem} from "../components/DownloadItem";
+import {DownloadObject} from "../models/DownloadObject";
 
 const API_CALLBACK = '/status/ui';
 
@@ -32,18 +34,28 @@ class NetworkController {
         this.setupDataTransformers();
     }
 
-    public registerListener(event, callback) {
+    public addListener(event, callback) {
         this.emitter.addListener(event, callback);
     }
 
     private setupDataTransformers() {
+        //TODO: Find some better way to generically process JSON than this copy and paste.
+
         this.addDataTransformer(NetworkController.NetworkEvents.notifications, function(data) {
             let result: UserNotification[] = [];
             data.forEach(function(itemJson) {
                 result.push(UserNotification.fromJson(itemJson));
             });
             return result;
-        })
+        });
+
+        this.addDataTransformer(NetworkController.NetworkEvents.downloads, function(data) {
+            let result: DownloadObject[] = [];
+            data.forEach(function(itemJson) {
+                result.push(DownloadObject.fromJson(itemJson));
+            });
+            return result;
+        });
     }
 
     private addDataTransformer(event: string, callback) {
@@ -77,15 +89,13 @@ class NetworkController {
             .then(function (response) {
                 console.log('got response', response);
                 var json = response.json().then(function(json){
-                    console.log('got json', json);
-
                     for (let key in json) {
                         if (!json.hasOwnProperty(key)) {
                             continue;
                         }
                         let data = json[key];
 
-                        if (typeof self.dataTransformers[key] !== undefined) {
+                        if (typeof self.dataTransformers[key] !== 'undefined') {
                             data = self.dataTransformers[key](data)
                         }
                         self.emitter.emit(key, data);
@@ -100,7 +110,6 @@ class NetworkController {
                 self.showTimeout();
             })
             .then(function() {
-                console.log('timer set');
                 self.timer = setTimeout(self.updateData.bind(self), 1000);
             })
     }
