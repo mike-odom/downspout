@@ -22,6 +22,8 @@ class FtpFile {
 
     private _transferred: number = 0;
 
+    private _downloadRate: number = 0;
+
     private _downloading: boolean = false;
 
     get directory(): string {
@@ -61,6 +63,10 @@ class FtpFile {
 
     set transferred(val: number) {
         this._transferred = val;
+    }
+
+    set downloadRate(val: number) {
+        this._downloadRate = val;
     }
 
     get name(): string {
@@ -105,7 +111,7 @@ class FtpFile {
         model.path = this._relativePath;
         model.size = this._targetData ? this._targetData.size : this._data.size;
         model.downloaded = this.transferred;
-        model.downloadRate = this.transferred > 0 ? 1.21 : 0;
+        model.downloadRate = this._downloadRate;
         model.status = this.downloading ? "downloading" : "queued";
         model.dateAdded = this._data.time;
         model.key = this._key;

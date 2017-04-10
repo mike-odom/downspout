@@ -62,8 +62,8 @@ class NetworkController {
 
     private getEventKeysToRequest() {
         //This feels hacky since I'm using an emitter library but I want to know what is being listened for so I can make good requests.
-        var result = [];
-        for (var event in NetworkController.NetworkEvents) {
+        const result = [];
+        for (let event in NetworkController.NetworkEvents) {
             console.log('event', event, this.emitter.listeners(event));
             if (this.emitter.listeners(event).length) {
                 result.push(event);
@@ -86,9 +86,9 @@ class NetworkController {
         fetch(url)
             .then(function (response) {
 
-                var json = response.json().then(function(json){
+                const json = response.json().then(function (json) {
                     console.log('got response', json);
-                    
+
                     for (let key in json) {
                         if (!json.hasOwnProperty(key)) {
                             continue;
@@ -96,7 +96,7 @@ class NetworkController {
                         let data = json[key];
 
                         console.log("data", key, data);
-                        
+
                         if (typeof self.dataTransformers[key] !== 'undefined') {
                             data = self.dataTransformers[key](data)
                         }
