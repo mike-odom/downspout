@@ -3,6 +3,7 @@ import mkdirp = require('mkdirp');
 import fs = require('fs');
 import once = require('once');
 import {FtpFile} from "../objects/FtpFile";
+import {TransferSpeedAverage} from "../objects/TransfersSpeedAverage";
 
 const logger = require('./Logger');
 const FtpController = require('./FtpController');

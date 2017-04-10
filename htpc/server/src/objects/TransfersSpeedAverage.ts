@@ -52,3 +52,5 @@ class TransferSpeedAverage {
         return this.sizeSum / (this.timeSum / 1000);
     }
 }
+
+export {TransferSpeedAverage}
