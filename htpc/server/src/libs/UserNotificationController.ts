@@ -5,7 +5,7 @@ class UserNotificationController {
 
     static _instance;
 
-    static getInstance() {
+    static getInstance(): UserNotificationController {
         if (!this._instance) {
             this._instance = new UserNotificationController();
         }
@@ -23,7 +23,7 @@ class UserNotificationController {
 
     clearOldNotifications() {
         this.notifications = this.notifications.filter(function (notification) {
-            return notification.postedTime > Date.now() + UserNotificationController.notificationTTL;
+            return Date.now() < (notification.postedTime + UserNotificationController.notificationTTL);
         });
     }
 

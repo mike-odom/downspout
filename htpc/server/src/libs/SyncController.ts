@@ -8,6 +8,7 @@ import mongoose = require('mongoose');
 import {FtpFile} from "../objects/FtpFile";
 import {UserNotificationModel} from "../../../shared/models/UserNotificationModel";
 import {UserNotificationController} from "./UserNotificationController";
+import {UserNotification} from "../objects/UserNotification";
 const SyncLogItem = require('./../objects/SyncLogItem');
 
 const FtpController = require('./FtpController');
@@ -23,6 +24,8 @@ class SyncController {
 
     public syncRequest() {
         logger.info("syncRequest");
+
+        UserNotificationController.getInstance().postNotification(new UserNotification("Sync Request received"));
         
         this.ftpScanner.scanRequest();
     }
@@ -202,7 +205,7 @@ class SyncController {
         if (!err) {
             this.completedList.push(file);
 
-            UserNotificationController.getInstance().post(new UserNotificationModel("Download completed " + file.name));
+            UserNotificationController.getInstance().postNotification(new UserNotificationModel("Download completed " + file.name));
         }
 
         //Done, remove from queue.

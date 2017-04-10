@@ -1,10 +1,12 @@
-import { UserNotification } from "./UserNotifications";
+import {UserNotification, UserNotificationsController} from "./UserNotifications";
 import { EventEmitter } from 'fbemitter'
 import {DownloadItem} from "../components/DownloadItem";
 import {DownloadModel} from "../../../shared/models/DownloadModel";
 import {BaseModel} from "../../../shared/models/BaseModel";
 
 const API_CALLBACK = '/status/ui';
+
+const SEEDBOX_CALLBACK = '/seedboxCallback';
 
 class NetworkController {
     static readonly NetworkEvents = {
@@ -127,6 +129,12 @@ class NetworkController {
             this.timeoutNotification.remove();
             this.timeoutNotification = null;
         }
+    }
+
+    requestScan() {
+        let notification = new UserNotification("Requesting scan").show();
+
+        fetch(SEEDBOX_CALLBACK).catch().then(() => notification.remove());
     }
 
     
