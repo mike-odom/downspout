@@ -103,6 +103,8 @@ class FtpFile {
         model.sourceRoot = this._basePath;
         model.destRoot = this._destinationRoot;
         model.path = this._relativePath;
+        model.size = this._targetData ? this._targetData.size : this._data.size;
+        model.downloaded = this.transferred;
         model.downloadRate = this.transferred > 0 ? 1.21 : 0;
         model.status = this.downloading ? "downloading" : "queued";
         model.dateAdded = this._data.time;
