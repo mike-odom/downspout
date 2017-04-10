@@ -6,7 +6,7 @@
     "start": "npm run build && npm run execute",
     "build": "tsc",
     "execute": "node server/build/server/src/bin/www.js",
-    "clean": "rm -rf server/build/* && rm -rf client/build/*"
+    "clean": "rimraf server/build/* && rimraf client/build/*"
   },
   "dependencies": {
     "async": "latest",
@@ -58,6 +58,7 @@
     "@types/react": "^15.0.21",
     "@types/react-dom": "^0.14.23",
     "@types/winston": "^2.2.0",
-    "awesome-typescript-loader": "^3.1.2"
+    "awesome-typescript-loader": "^3.1.2",
+    "rimraf": "^2.6.1"
   }
 }
