@@ -1,5 +1,3 @@
-import {DownloadModel} from "./DownloadModel";
-
 class BaseModel {
     toJson() {
         return JSON.stringify(this);
@@ -22,10 +20,6 @@ class BaseModel {
         Object.assign(obj, data);
 
         return obj;
-    }
-
-    test() {
-        BaseModel.fromJsonArray("asdf", DownloadModel.fromJson);
     }
 }
 

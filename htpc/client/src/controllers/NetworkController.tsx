@@ -43,11 +43,10 @@ class NetworkController {
         //TODO: Find some better way to generically process JSON than this copy and paste.
 
         this.addDataTransformer(NetworkController.NetworkEvents.notifications, function(data) {
-            let result: UserNotification[] = [];
-            data.forEach(function(itemJson) {
-                result.push(UserNotification.fromJson(itemJson));
-            });
-            return result;
+            let notifications = BaseModel.fromJsonArray(data, UserNotification.create);
+
+            console.log("transformed notifications", notifications);
+            return notifications;
         });
 
         this.addDataTransformer(NetworkController.NetworkEvents.downloads, function(data) {
@@ -84,14 +83,18 @@ class NetworkController {
         
         fetch(url)
             .then(function (response) {
-                console.log('got response', response);
+
                 var json = response.json().then(function(json){
+                    console.log('got response', json);
+                    
                     for (let key in json) {
                         if (!json.hasOwnProperty(key)) {
                             continue;
                         }
                         let data = json[key];
 
+                        console.log("data", key, data);
+                        
                         if (typeof self.dataTransformers[key] !== 'undefined') {
                             data = self.dataTransformers[key](data)
                         }
@@ -107,7 +110,7 @@ class NetworkController {
                 self.showTimeout();
             })
             .then(function() {
-                self.timer = setTimeout(self.updateData.bind(self), 1000);
+                self.timer = setTimeout(self.updateData.bind(self), 3000);
             })
     }
 

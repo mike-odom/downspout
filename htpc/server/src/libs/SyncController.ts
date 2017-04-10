@@ -6,6 +6,7 @@ const fs = require('fs');
 const config = require('../Config');
 import mongoose = require('mongoose');
 import {FtpFile} from "../objects/FtpFile";
+import {UserNotificationModel} from "../../../shared/models/UserNotificationModel";
 const SyncLogItem = require('./../objects/SyncLogItem');
 
 const FtpController = require('./FtpController');
@@ -29,8 +30,16 @@ class SyncController {
         let downloads = [];
 
         for (let file of this.downloadQueue) {
-            downloads.push(file.json());
+            downloads.push(file.toModel());
         }
+
+        let notification = new UserNotificationModel();
+        notification.message = "moo";
+        notification.uid = "asdf";
+
+        let notifications = [
+            notification
+        ];
 
         return {
             "stats": {
@@ -39,7 +48,8 @@ class SyncController {
                 "num_connections": 1,
                 "max_num_connections": 2
             },
-            "downloads": downloads
+            "downloads": downloads,
+            "notifications": notifications
         };
     }
 
