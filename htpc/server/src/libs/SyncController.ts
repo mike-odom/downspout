@@ -7,6 +7,7 @@ const config = require('../Config');
 import mongoose = require('mongoose');
 import {FtpFile} from "../objects/FtpFile";
 import {UserNotificationModel} from "../../../shared/models/UserNotificationModel";
+import {UserNotificationController} from "./UserNotificationController";
 const SyncLogItem = require('./../objects/SyncLogItem');
 
 const FtpController = require('./FtpController');
@@ -33,14 +34,6 @@ class SyncController {
             downloads.push(file.toModel());
         }
 
-        let notification = new UserNotificationModel();
-        notification.message = "moo";
-        notification.uid = "asdf";
-
-        let notifications = [
-            notification
-        ];
-
         return {
             "stats": {
                 "download_rate": 56.3,
@@ -49,7 +42,7 @@ class SyncController {
                 "max_num_connections": 2
             },
             "downloads": downloads,
-            "notifications": notifications
+            "notifications": UserNotificationController.getInstance().getNotifications()
         };
     }
 
@@ -198,7 +191,7 @@ class SyncController {
         }
     }
 
-    private downloadDone(err, file) {
+    private downloadDone(err, file: FtpFile) {
         if (!err && config.deleteRemoteFiles) {
             this.deleteRemoteFile(file);
         }
@@ -208,6 +201,8 @@ class SyncController {
 
         if (!err) {
             this.completedList.push(file);
+
+            UserNotificationController.getInstance().post(new UserNotificationModel("Download completed " + file.name));
         }
 
         //Done, remove from queue.
