@@ -31,6 +31,7 @@
     "mongoose": "latest",
     "morgan": "~1.7.0",
     "npm-run": "^4.1.1",
+    "once": "^1.4.0",
     "react": "^15.4.2",
     "react-document-title": "^2.0.2",
     "react-dom": "^15.4.2",
