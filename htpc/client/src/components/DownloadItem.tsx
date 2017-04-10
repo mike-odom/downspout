@@ -28,7 +28,6 @@ class DownloadItem extends React.Component<IDownloadItemProps, IDownloadItemStat
                         to: {download.destRoot}
                     </div>
                     {download.dateAdded}
-                    {download.key}
                 </div>
             </div>
         );
