@@ -35,8 +35,6 @@ class TransferSpeedAverage {
 
         this.lastTime = curTime;
 
-        console.log("sizes", size, this.sizeSum, this.average());
-
         //Trim
         if (this.points.length > this.MAX_FRAMES) {
             var data = this.points[0];
