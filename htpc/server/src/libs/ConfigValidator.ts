@@ -23,7 +23,7 @@ class ConfigValidator {
     public loadConfig(config: Config) {
         //Config file is found at root of app at runtime.
         if (!fs.existsSync('config.js')) {
-            configValidator.quitApp("Config file was not found");
+            this.quitApp("Config file was not found");
         }
 
         // Read and eval our user's config file
