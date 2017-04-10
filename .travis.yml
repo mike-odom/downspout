@@ -1,8 +1,12 @@
 language: node_js
 node_js: "7"
 
-before_script: cd htpc
-
 install: 
  - npm install
  - npm run build
+
+ before_install:
+ - cd htpc
+
+before_script: 
+ - cd htpc
