@@ -96,7 +96,7 @@ class FtpFile {
         this._key = UUID();
     }
 
-    json() {
+    toModel() {
         //TODO: Finish this data structure.
         var model = new DownloadModel();
         model.filename = this._data.name;

@@ -2,6 +2,7 @@ import * as React from 'react'
 import * as NotificationSystem from "react-notification-system"
 import { EventEmitter } from 'fbemitter'
 import {NetworkController} from "./NetworkController";
+import {UserNotificationModel} from "../../../shared/models/UserNotificationModel";
 
 const EVENTS = {
     notification: "notification",
@@ -88,7 +89,9 @@ class UserNotificationsController {
     }
 
     onNetworkNotifications(notifications: UserNotification[]) {
-        notifications.forEach(notification => this.post(notification));
+        console.log('got notifications', notifications);
+        
+        notifications.forEach(notification => notification.show());
     }
 
     post(notification: UserNotification) {
@@ -109,11 +112,8 @@ class UserNotificationsController {
     }
 }
 
-class UserNotification {
+class UserNotification extends UserNotificationModel {
     public sticksAround: boolean;
-    public title;
-    public message;
-    public uid;
     public level = UserNotification.LEVELS.info;
 
     static readonly LEVELS = {
@@ -124,6 +124,8 @@ class UserNotification {
     };
 
     constructor(message?: string) {
+        super();
+
         this.message = message;
     }
 
@@ -162,20 +164,9 @@ class UserNotification {
         return this;
     }
 
-    static fromJson(json): UserNotification {
-        var notification = new UserNotification();
-
-        for (let key in json) {
-            if (!json.hasOwnProperty(key)) {
-                continue;
-            }
-
-            notification[key] = json[key];
-        }
-
-        return notification;
+    static create() {
+        return new UserNotification();
     }
-
 }
 
 export { UserNotificationContainer, UserNotificationsController, UserNotification }
