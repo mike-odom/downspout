@@ -1,4 +1,5 @@
 # SeedboxSync
+[![Build Status](https://travis-ci.org/ThatOdieGuy/SeedboxSync.svg?branch=master)](https://travis-ci.org/ThatOdieGuy/SeedboxSync)
 
 ## Overview
 
