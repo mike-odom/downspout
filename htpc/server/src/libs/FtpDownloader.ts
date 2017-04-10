@@ -13,6 +13,8 @@ class FtpDownloader {
 
     private _downloadDoneCallback;
 
+    private _downloadSpeed = new TransferSpeedAverage();
+
     constructor(file: FtpFile, destinationDirectory: string) {
         this._file = file;
         this._destinationDirectory = destinationDirectory;
@@ -108,7 +110,9 @@ class FtpDownloader {
                 //Or should this be fs.bytesWritten?
                 file.transferred = sock.bytesRead;
 
-                //self._progressCallback(data);
+                self._downloadSpeed.dataReceived(p.length);
+
+                file.downloadRate = self._downloadSpeed.average();
             });
             sock.on("close", function(err) {
                 if (err) {
