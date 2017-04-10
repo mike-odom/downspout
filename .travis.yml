@@ -5,7 +5,7 @@ install:
  - npm install
  - npm run build
 
- before_install:
+before_install:
  - cd htpc
 
 before_script: 
