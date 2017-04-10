@@ -5,6 +5,14 @@ class UserNotificationModel extends BaseModel {
     public message;
     public uid;
 
+    public postedTime;
+
+    constructor (message?: string) {
+        super();
+
+        this.message = message;
+    }
+
     static create(): UserNotificationModel {
         return new UserNotificationModel();
     }
