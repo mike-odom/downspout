@@ -61,12 +61,12 @@ config.localSyncFolder = "C:\\seedboxTest";
 config.pathMappings =
     [
         {
-            remotePath: "/seedbox-sync/toUpload/tv",
+            remotePath: "/downspout/toUpload/tv",
             localPath: "c:/seedbox/tv",
             type: "shows"
         },
         {
-            remotePath: "/seedbox-sync/toUpload/movies",
+            remotePath: "/downspout/toUpload/movies",
             localPath: "d:/home-theater/movies",
             type: "movies"
         }
@@ -109,8 +109,8 @@ sudo npm install pm2 -g
 sudo pm2 startup -u nodeuser
 
 # Start the app and save the config
-pm2 start npm --name "seedbox-sync" -- start && pm2 save
+pm2 start npm --name "downspout" -- start && pm2 save
 
 # Note, for faster startup times you can skip the TypeScript compilation with this line instead
-# pm2 start npm --name "seedbox-sync" -- execute && pm2 save
+# pm2 start npm --name "downspout" -- execute && pm2 save
 ```
