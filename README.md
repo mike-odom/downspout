@@ -1,5 +1,5 @@
-# SeedboxSync
-[![Build Status](https://travis-ci.org/ThatOdieGuy/SeedboxSync.svg?branch=master)](https://travis-ci.org/ThatOdieGuy/SeedboxSync)
+# Downspout
+[![Build Status](https://travis-ci.org/ThatOdieGuy/downspout.svg?branch=master)](https://travis-ci.org/ThatOdieGuy/downspout)
 
 ## Overview
 
