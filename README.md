@@ -1,4 +1,7 @@
+<img src="Logov0.2.png" alt="Drawing" width="128"/>
+
 # Downspout
+
 [![Build Status](https://travis-ci.org/ThatOdieGuy/downspout.svg?branch=master)](https://travis-ci.org/ThatOdieGuy/downspout)
 
 ## Overview
