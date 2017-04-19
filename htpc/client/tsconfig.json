@@ -5,7 +5,10 @@
     "target": "ES6",
     "jsx": "react",
     "rootDir": "../",
-    "outDir": "build"
+    "outDir": "build",
+    "typeRoots": [
+      "../node_modules/@types"
+    ]
   },
   "include": [
     "src",
