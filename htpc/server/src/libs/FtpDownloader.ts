@@ -42,6 +42,7 @@ class FtpDownloader {
         });
 
         let localPath = FtpFile.appendSlash(localDirectory) + file.name;
+        let tempPath = localPath + ".tmp";
 
         logger.info("Downloading", file.fullPath);
 
@@ -70,6 +71,13 @@ class FtpDownloader {
                     logger.error('Error closing file descriptor.?', exception);
                     err = exception;
                 }
+            }
+
+            try {
+                fs.renameSync(tempPath, localPath);
+            } catch (exception) {
+                logger.error('Error renaming temp file', tempPath, exception);
+                err = exception;
             }
 
             if (!err) {
@@ -102,7 +110,7 @@ class FtpDownloader {
                 return;
             }
 
-            fd = fs.openSync(localPath, "w+");
+            fd = fs.openSync(tempPath, "w+");
 
             // `sock` is a stream. attach events to it.
             sock.on("data", function(p) {
