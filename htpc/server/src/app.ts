@@ -89,7 +89,7 @@ app.engine('handlebars', exphbs({defaultLayout: 'main'}));
 app.set('view engine', 'handlebars');
 
 // uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+app.use(favicon(path.join(__dirname, clientRoot, 'public', 'favicon.ico')));
 
 // Log all HTTP traffic. Disabled as this gets to be too much with the polling.
 //app.use(morgan('dev'));
