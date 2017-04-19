@@ -1,5 +1,5 @@
 import * as React from 'react'
-import * as NotificationSystem from "react-notification-system"
+import * as NotificationSystem from 'react-notification-system'
 import { EventEmitter } from 'fbemitter'
 import {NetworkController} from "./NetworkController";
 import {UserNotificationModel} from "../../../shared/models/UserNotificationModel";
@@ -23,7 +23,7 @@ interface IUserNotificationsState {
  */
 class UserNotificationContainer extends React.Component<IUserNotificationsProps, IUserNotificationsState> {
 
-    private notificationSystem: NotificationSystem;
+    private notificationSystem;
 
     private listenerSubscriptions: any[] = [];
     
