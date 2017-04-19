@@ -73,11 +73,13 @@ class FtpDownloader {
                 }
             }
 
-            try {
-                fs.renameSync(tempPath, localPath);
-            } catch (exception) {
-                logger.error('Error renaming temp file', tempPath, exception);
-                err = exception;
+            if (!err) {
+                try {
+                    fs.renameSync(tempPath, localPath);
+                } catch (exception) {
+                    logger.error('Error renaming temp file', tempPath, exception);
+                    err = exception;
+                }
             }
 
             if (!err) {
@@ -98,10 +100,25 @@ class FtpDownloader {
                 downloadDone('timeout');
             });
 
+        try {
+            fd = fs.openSync(tempPath, "a");
 
+            var skipBytes = fs.fstatSync(fd).size;
+
+            if (skipBytes) {
+                logger.info("file already exists, skipping bytes " + skipBytes);
+            }
+
+            //For displaying on the client.
+            file.transferred = skipBytes;
+        } catch(exception) {
+            logger.info("Error opening file for writing", tempPath);
+            downloadDone(exception);
+            return;
+        }
 
         // Retrieve the file using async streams
-        ftp.getGetSocket(file.fullPath, function(err: Error, sock: Socket) {
+        ftp.getGetSocket(file.fullPath, skipBytes, function(err: Error, sock: Socket) {
             socket = sock;
             
             if (err) {
@@ -110,14 +127,12 @@ class FtpDownloader {
                 return;
             }
 
-            fd = fs.openSync(tempPath, "w+");
-
             // `sock` is a stream. attach events to it.
             sock.on("data", function(p) {
                 fs.writeSync(fd, p, 0, p.length, null);
 
                 //Or should this be fs.bytesWritten?
-                file.transferred = sock.bytesRead;
+                file.transferred = sock.bytesRead + skipBytes;
 
                 self._downloadSpeed.dataReceived(p.length);
 
