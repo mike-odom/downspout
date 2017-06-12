@@ -32,7 +32,7 @@ class ConfigValidator {
         eval(configFile);
 
         for (let func of this.validations) {
-            func(config);
+            func.bind(this)(config);
         }
 
         return true;
