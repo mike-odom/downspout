@@ -53,6 +53,15 @@ class ConfigValidator {
         if (!config.seedboxFtp.host) {
             this.quitApp("Please setup config.seedboxFtp.host");
         }
+
+        // //Make sure we have defaults
+        // var newSeedboxFtp = new SeedboxFtpConfig();
+        //
+        // for (var prop in config.seedboxFtp) {
+        //     newSeedboxFtp[prop] = config.seedboxFtp[prop];
+        // }
+        //
+        // config.seedboxFtp = newSeedboxFtp;
     }
 
     private fixPathMappings(config: Config) {

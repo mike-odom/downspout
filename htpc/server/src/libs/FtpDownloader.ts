@@ -25,13 +25,15 @@ class FtpDownloader {
         var self = this;
 
         this._downloadDoneCallback = callback;
-        
+
         const file = this._file;
         const localDirectory = this._destinationDirectory;
 
         file.destinationRoot = localDirectory;
 
         file.downloading = true;
+
+        logger.info("Downloading", file.fullPath);
 
         logger.info("mkdirp", localDirectory);
 
@@ -43,8 +45,6 @@ class FtpDownloader {
 
         let localPath = FtpFile.appendSlash(localDirectory) + file.name;
         let tempPath = localPath + ".tmp";
-
-        logger.info("Downloading", file.fullPath);
 
         var ftp = FtpController.ftpForDownloading();
 
