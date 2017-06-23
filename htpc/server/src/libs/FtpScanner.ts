@@ -99,7 +99,7 @@ class FtpScanner {
         for (let file of data) {
             //Only transfer symlinks, or if running the test server, all files
             if (file.type == FtpFile.FTP_TYPE_SYM_LINK || (/*config.testFtpServer && */ file.type == FtpFile.FTP_TYPE_FILE)) {
-                logger.info(relativePath + file.name);
+                logger.info("FtpScanner found: " + relativePath + file.name);
                 let fileObj = new FtpFile(basePath, relativePath, file);
                 outList.push(fileObj);
             } else if (file.type == FtpFile.FTP_TYPE_DIRECTORY) {
