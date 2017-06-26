@@ -50,7 +50,15 @@ class FtpScanner {
         let ftp = FTPController.newJSFtp();
 
         function ftpScanError(err) {
-            logger.error("Error trying to scan FTP", err);
+            switch (err.code) {
+                //"Invalid FTP username/password"
+                case 530:
+                    logger.error(err.toString());
+                    break;
+                default:
+                    //Only output the full error for unrecognized errors.
+                    logger.error("Error trying to scan FTP", err);
+            }
             self.scanComplete(err, null, ftp);
         }
 
