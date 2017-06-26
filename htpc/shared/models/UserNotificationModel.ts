@@ -1,4 +1,5 @@
 import {BaseModel} from "./BaseModel";
+const UUID = require('uuid/v1');
 
 class UserNotificationModel extends BaseModel {
     public title;
@@ -11,6 +12,8 @@ class UserNotificationModel extends BaseModel {
         super();
 
         this.message = message;
+
+        this.uid = UUID();
     }
 
     static create(): UserNotificationModel {
