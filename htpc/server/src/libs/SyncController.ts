@@ -49,11 +49,23 @@ class SyncController {
         };
     }
 
-    public scanCompleteCallback(err: Error, scannedQueue: FtpFile[], ftp) {
+    public scanCompleteCallback(err, scannedQueue: FtpFile[], ftp) {
         var self = this;
 
         if (err) {
-            logger.error("scanCompleteCallback: ", err);
+            let message;
+
+            switch (err.code) {
+                case 530:
+                    message = "Invalid FTP user or password";
+                    break;
+                default:
+                   message = err.toString();
+            }
+            logger.error("scanCompleteCallback: ", message);
+
+            UserNotificationController.getInstance().postNotification(new UserNotificationModel(message));
+
             return;
         }
 
