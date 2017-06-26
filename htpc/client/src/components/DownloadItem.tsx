@@ -16,7 +16,7 @@ class DownloadItem extends React.Component<IDownloadItemProps, IDownloadItemStat
         
         return (
             <div className="item">
-                <header>{download.path}/{download.filename}</header>
+                <header>{download.path}{download.filename}</header>
                 <div className="transferInfo">
                     <ProgressBar download={download} />
                 </div>
