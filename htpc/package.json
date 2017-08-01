@@ -41,7 +41,7 @@
     "react-router": "^4.0.0",
     "react-stormpath": "^2.0.1",
     "serve-favicon": "~2.3.0",
-    "typescript": "^2.2.1",
+    "typescript": "2.3.4",
     "upath": "^0.2.0",
     "uuid": "^3.0.1",
     "webpack": "^2.3.3",
@@ -67,6 +67,7 @@
     "awesome-typescript-loader": "^3.1.2",
     "chai": "^3.5.0",
     "mocha": "^3.2.0",
-    "rimraf": "^2.6.1"
+    "rimraf": "^2.6.1",
+    "source-map-support": "^0.4.15"
   }
 }

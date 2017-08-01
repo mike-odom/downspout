@@ -179,15 +179,17 @@ class SyncController {
         let remoteDirectory = file.relativeDirectory;
         let pathMap : PathMapping;
 
-        for (pathMap of config.pathMappings) {
-            // We're going to be doing some comparison and removal with this path. Make sure it's good.
-            let pathMapDirectory = FtpFile.appendSlash(pathMap.remotePath);
+        if (config.pathMappings) {
+            for (pathMap of config.pathMappings) {
+                // We're going to be doing some comparison and removal with this path. Make sure it's good.
+                let pathMapDirectory = FtpFile.appendSlash(pathMap.remotePath);
 
-            if (remoteDirectory.indexOf(pathMapDirectory) == 0) {
-                //Strip the pathMap root from the remoteDirectory to get the relative mapping
-                let relativeDirectory = remoteDirectory.substring(pathMapDirectory.length);
+                if (remoteDirectory.indexOf(pathMapDirectory) == 0) {
+                    //Strip the pathMap root from the remoteDirectory to get the relative mapping
+                    let relativeDirectory = remoteDirectory.substring(pathMapDirectory.length);
 
-                return FtpFile.appendSlash(pathMap.localPath) + relativeDirectory;
+                    return FtpFile.appendSlash(pathMap.localPath) + relativeDirectory;
+                }
             }
         }
         

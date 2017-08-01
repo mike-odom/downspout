@@ -65,6 +65,9 @@ class ConfigValidator {
     }
 
     private fixPathMappings(config: Config) {
+        if (!config.pathMappings) {
+            return;
+        }
         //Make any absolute paths into relative paths of the root.
         let pathMapping : PathMapping;
         for (pathMapping of config.pathMappings) {
