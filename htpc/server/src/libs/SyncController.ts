@@ -50,7 +50,7 @@ class SyncController {
     }
 
     public scanCompleteCallback(err, scannedQueue: FtpFile[], ftp) {
-        var self = this;
+        const self = this;
 
         if (err) {
             let message;
@@ -74,9 +74,9 @@ class SyncController {
         // Merge downloadQueue & scannedQueue
         let nonDupes = [];
         // Merge downloadQueue & scannedQueue
-        for (var t = 0; t < scannedQueue.length; t++) {
-            var testFile = scannedQueue[t];
-            for (var n = 0; n < self.downloadQueue.length; n++) {
+        for (let t = 0; t < scannedQueue.length; t++) {
+            let testFile = scannedQueue[t];
+            for (let n = 0; n < self.downloadQueue.length; n++) {
                 if (testFile.equals(self.downloadQueue[n])) {
                     testFile = null;
                     break;
@@ -231,7 +231,7 @@ class SyncController {
     }
 
     private deleteRemoteFile(file: FtpFile) {
-        var deleteFtpError = function deleteFtpError(err) {
+        let deleteFtpError = function deleteFtpError(err) {
             logger.error("Error deleting file, make sure you have proper permissions", file.actualPath, err);
 
             //TODO: Handle this failed delete better. Logging or something.

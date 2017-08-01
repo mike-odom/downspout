@@ -22,7 +22,7 @@ class FtpDownloader {
     }
 
     public start(callback) {
-        var self = this;
+        const self = this;
 
         this._downloadDoneCallback = callback;
 
@@ -46,7 +46,7 @@ class FtpDownloader {
         let localPath = FtpFile.appendSlash(localDirectory) + file.name;
         let tempPath = localPath + ".tmp";
 
-        var ftp = FtpController.ftpForDownloading();
+        const ftp = FtpController.ftpForDownloading();
 
         let fd;
         let socket;
@@ -100,10 +100,12 @@ class FtpDownloader {
                 downloadDone('timeout');
             });
 
+        let skipBytes;
+
         try {
             fd = fs.openSync(tempPath, "a");
 
-            var skipBytes = fs.fstatSync(fd).size;
+            skipBytes = fs.fstatSync(fd).size;
 
             if (skipBytes) {
                 logger.info("file already exists, skipping bytes " + skipBytes);
