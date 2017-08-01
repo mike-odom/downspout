@@ -1,3 +1,5 @@
+require('source-map-support').install();
+
 import winston = require('winston');
 const logger : winston.LoggerInstance = require('./libs/Logger');
 
