@@ -54,7 +54,6 @@ class FtpDownloader {
         let downloadDone = function(err) {
             if (err) {
                 logger.error("Error downloading file\r\n", err);
-                self._downloadDoneCallback(err, file);
 
                 //Make sure no more data can come in
                 if (socket) {
@@ -140,6 +139,7 @@ class FtpDownloader {
 
                 file.downloadRate = self._downloadSpeed.average();
             });
+
             sock.on("close", function(err) {
                 if (err) {
                     downloadDone(err);
