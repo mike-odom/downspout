@@ -5,6 +5,7 @@ const logger : winston.LoggerInstance = new (winston.Logger)({
         new winston.transports.File(
             {
                 filename: 'seedsync.log',
+                level: 'debug',
                 timestamp: true,
                 maxsize: 1000000,
                 handleExceptions: true,
