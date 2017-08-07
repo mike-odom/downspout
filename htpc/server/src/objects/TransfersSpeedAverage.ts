@@ -37,7 +37,7 @@ class TransferSpeedAverage {
 
         //Trim
         if (this.points.length > this.MAX_FRAMES) {
-            var data = this.points[0];
+            const data = this.points[0];
 
             this.sizeSum -= data.size;
             this.timeSum -= data.timeDelta;

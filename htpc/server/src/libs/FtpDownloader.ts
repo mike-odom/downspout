@@ -94,8 +94,8 @@ class FtpDownloader {
         downloadDone = once(downloadDone);
 
 
-        ftp.on('error', downloadDone)
-            .on('timeout', function() {
+        ftp.on('error', downloadDone);
+        ftp.on('timeout', function() {
                 downloadDone('timeout');
             });
 
