@@ -17,12 +17,12 @@ const bodyParser = require('body-parser');
 
 const app = express();
 
-var webpack = require('webpack');
+const webpack = require('webpack');
 
 //This feels ghetto, it's because we're deep into the build folders.
 const clientRoot = "../../../../client/";
 
-var webpackConfig = require(path.join(clientRoot, 'webpack.config.js'));
+const webpackConfig = require(path.join(clientRoot, 'webpack.config.js'));
 
 //working
 //var webpackConfig = require('../../../../client/webpack.config.js');
@@ -105,7 +105,7 @@ app.use('/', status);
 app.use('/users', users);
 app.use('/seedboxCallback', seedboxCallback);
 
-var compiler = webpack(webpackConfig);
+const compiler = webpack(webpackConfig);
 
 app.use(require('webpack-dev-middleware')(compiler, {
     noInfo: true,

@@ -91,7 +91,6 @@ class PathMapping {
     type: string;
 }
 
-const fs = require('fs');
 //Make sure that all our config values are good to use and cleaned up.
 // Do this before any other processing.
 let configValidator = require('./libs/ConfigValidator');

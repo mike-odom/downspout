@@ -29,7 +29,7 @@ router.post('/', bodyParser.json(), function (req, res, next) {
 /**
  * Debug URL so I can curl this
  */
-router.get('/', function (req, res, next) {
+router.get('/', function (req, res) {
     res.json([]);
 
     downloader.syncRequest();

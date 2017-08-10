@@ -69,7 +69,7 @@ class ConfigValidator {
             return;
         }
         //Make any absolute paths into relative paths of the root.
-        let pathMapping : PathMapping;
+        let pathMapping: PathMapping = null;
         for (pathMapping of config.pathMappings) {
             //Absolute path. Try to fix.
             if (pathMapping.remotePath[0] == '/') {
