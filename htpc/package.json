@@ -11,6 +11,7 @@
     "pretest": "npm run build"
   },
   "dependencies": {
+    "@types/socket.io-client": "^1.4.29",
     "async": "latest",
     "babel-core": "^6.24.0",
     "babel-loader": "^6.4.1",
@@ -42,6 +43,7 @@
     "react-stormpath": "^2.0.1",
     "serve-favicon": "~2.3.0",
     "socket.io": "^2.0.3",
+    "socket.io-client": "^2.0.3",
     "typescript": "2.3.4",
     "upath": "^0.2.0",
     "uuid": "^3.0.1",

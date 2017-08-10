@@ -1,6 +1,7 @@
+import * as io from 'socket.io-client';
+
 import {UserNotification, UserNotificationsController} from "./UserNotifications";
 import { EventEmitter } from 'fbemitter'
-import {DownloadItem} from "../components/DownloadItem";
 import {DownloadModel} from "../../../shared/models/DownloadModel";
 import {BaseModel} from "../../../shared/models/BaseModel";
 
@@ -23,7 +24,9 @@ class NetworkController {
         }
         return NetworkController._instance;
     }
-    
+
+    private socket;
+
     private timer;
 
     private timeoutNotification: UserNotification;
@@ -33,7 +36,9 @@ class NetworkController {
     private dataTransformers = [];
 
     private constructor() {
-        this.updateData();
+        this.socket = io.connect(location.protocol + '//' + window.location.host);
+
+        //this.updateData();
         this.setupDataTransformers();
     }
 

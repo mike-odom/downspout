@@ -10,6 +10,8 @@ const app = require('../app');
 const debug = require('debug')('seedboxsync:server');
 const http = require('http');
 
+import socketIO = require('socket.io');
+
 import winston = require('winston');
 const logger : winston.LoggerInstance = require('../libs/Logger');
 
@@ -33,6 +35,20 @@ const server = http.createServer(app);
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
+
+//TODO: Put sockets.io setup somewhere else
+const io = socketIO(server);
+
+io.on('connect', (socket) => {
+    console.log('client connected');
+
+    socket.on('disconnect', () => {
+        console.log('client disconnected');
+    });
+});
+
+setInterval(() => { io.emit('time', Date.now().toString())}, 1000);
+
 
 /**
  * Normalize a port into a number, string, or false.
