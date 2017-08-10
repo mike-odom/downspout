@@ -4,11 +4,11 @@ const router = express.Router();
 const downloader = require('../libs/SyncController');
 
 /* GET home page. */
-router.get('/', function (req, res, next) {
+router.get('/', function (req, res) {
     res.render('status', { title: 'SeedboxSync Status Page' });
 });
 
-router.get('/status/ui', function (req, res, next) {
+router.get('/status/ui', function (req, res) {
     res.json(downloader.status());
 });
 

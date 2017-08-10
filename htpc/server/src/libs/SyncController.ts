@@ -2,14 +2,11 @@ import * as winston from "winston";
 
 const logger : winston.LoggerInstance = require('./Logger');
 
-const fs = require('fs');
 const config = require('../Config');
-import mongoose = require('mongoose');
 import {FtpFile} from "../objects/FtpFile";
 import {UserNotificationModel} from "../../../shared/models/UserNotificationModel";
 import {UserNotificationController} from "./UserNotificationController";
 import {UserNotification} from "../objects/UserNotification";
-const SyncLogItem = require('./../objects/SyncLogItem');
 
 const FtpController = require('./FtpController');
 const FtpScanner = require('./FtpScanner');
@@ -69,8 +66,6 @@ class SyncController {
             return;
         }
 
-        let originalDownloadQueueLength = self.downloadQueue.length;
-        
         // Merge downloadQueue & scannedQueue
         let nonDupes = [];
         // Merge downloadQueue & scannedQueue
@@ -177,7 +172,7 @@ class SyncController {
      */
     private getDestinationDirectory(file : FtpFile) : string {
         let remoteDirectory = file.relativeDirectory;
-        let pathMap : PathMapping;
+        let pathMap: PathMapping = null;
 
         if (config.pathMappings) {
             for (pathMap of config.pathMappings) {
