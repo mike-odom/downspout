@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 
+import {NetworkEvent} from "../../../shared/NetworkConstants";
+
 /**
  * Module dependencies.
  */
 
+
 const app = require('../app');
 
-//var app = require('../app');
 const debug = require('debug')('seedboxsync:server');
 const http = require('http');
 
@@ -16,6 +18,8 @@ import winston = require('winston');
 const logger : winston.LoggerInstance = require('../libs/Logger');
 
 const config = require('../Config');
+
+const syncController = require('../libs/SyncController');
 
 /**
  * Get port from environment and store in Express.
@@ -47,7 +51,11 @@ io.on('connect', (socket) => {
     });
 });
 
-setInterval(() => { io.emit('time', Date.now().toString())}, 1000);
+setInterval(() => {
+    if (io.engine["clientsCount"]) {
+        io.emit(NetworkEvent.DOWNLOADS.name(), syncController.downloadsStatus());
+    }
+}, 1000);
 
 
 /**

@@ -2,13 +2,13 @@
   "compilerOptions": {
     "module": "commonjs",
     "moduleResolution": "node",
-    "target": "ES6",
+    "target": "es2015",
     "alwaysStrict": true,
     "sourceMap": true,
     "outDir": "server/build"
   },
   "include": [
-    "server/src",
-    "shared/models"
+    "server/src/**/*",
+    "shared/**/*"
   ]
 }

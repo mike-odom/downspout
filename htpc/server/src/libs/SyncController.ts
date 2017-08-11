@@ -27,12 +27,17 @@ class SyncController {
         this.ftpScanner.scanRequest();
     }
 
-    public status() {
+    public downloadsStatus() {
         let downloads = [];
 
         for (let file of this.downloadQueue) {
             downloads.push(file.toModel());
         }
+
+        return downloads;
+    }
+
+    public status() {
 
         return {
             "stats": {
@@ -41,7 +46,6 @@ class SyncController {
                 "num_connections": 1,
                 "max_num_connections": 2
             },
-            "downloads": downloads,
             "notifications": UserNotificationController.getInstance().getNotifications()
         };
     }

@@ -3,6 +3,7 @@ import * as NotificationSystem from 'react-notification-system'
 import { EventEmitter } from 'fbemitter'
 import {NetworkController} from "./NetworkController";
 import {UserNotificationModel} from "../../../shared/models/UserNotificationModel";
+import {NetworkEvent} from "../../../shared/NetworkConstants";
 
 const EVENTS = {
     notification: "notification",
@@ -85,7 +86,7 @@ class UserNotificationsController {
     private eventEmitter: EventEmitter = new EventEmitter();
 
     private constructor() {
-        NetworkController.instance().addListener(NetworkController.NetworkEvents.notifications, this.onNetworkNotifications.bind(this));
+        NetworkController.instance().addListener(NetworkEvent.NOTIFICATIONS, this.onNetworkNotifications.bind(this));
     }
 
     onNetworkNotifications(notifications: UserNotification[]) {

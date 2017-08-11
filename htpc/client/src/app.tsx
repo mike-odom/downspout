@@ -5,7 +5,7 @@ import {DownloadItemList} from './components/DownloadItemList';
 import {UserNotificationContainer} from "./controllers/UserNotifications";
 import {QuickControls} from "./components/QuickControls";
 
-var jsx = (
+const jsx = (
     <div>
         <QuickControls />
         <DownloadItemList />
