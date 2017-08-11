@@ -3,6 +3,7 @@ import {DownloadItem} from "./DownloadItem";
 import {UserNotification} from "../controllers/UserNotifications";
 import {NetworkController} from "../controllers/NetworkController";
 import {DownloadModel} from "../../../shared/models/DownloadModel";
+import {NetworkEvent} from "../../../shared/NetworkConstants";
 
 interface IDownloadItemListProps {
 
@@ -42,7 +43,7 @@ class DownloadItemList extends React.Component<IDownloadItemListProps, IDownload
 
     componentDidMount() {
         this.networkEmitterSubscription = NetworkController.instance().addListener(
-            NetworkController.NetworkEvents.downloads,
+            NetworkEvent.DOWNLOADS,
             this.onDownloadList.bind(this)
         );
     }
