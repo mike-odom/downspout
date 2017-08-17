@@ -115,7 +115,7 @@ class SyncController {
                     }
 
                     logger.info("Got target data", data[0]);
-                    file.targetData(data[0]);
+                    file.targetData = data[0];
                 });
             }
         }
