@@ -5,7 +5,7 @@ import {FtpFile} from "../objects/FtpFile";
 const logger = require('./Logger');
 const config = require('../Config');
 
-const FTPController = require('./FtpController');
+import {FtpController} from './FtpController';
 
 type ScanCompleteCallbackFunction = (err: Error, files: FtpFile[], ftp) => void;
 
@@ -47,7 +47,7 @@ class FtpScanner {
 
         let syncFolder = config.seedboxFtp.syncRoot;
 
-        let ftp = FTPController.newJSFtp();
+        let ftp = FtpController.newJSFtp();
 
         function ftpScanError(err) {
             switch (err.code) {
@@ -140,4 +140,4 @@ class FtpScanner {
     }
 }
 
-module.exports = FtpScanner;
+export {FtpScanner};
