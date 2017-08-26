@@ -11,6 +11,7 @@ import {UserNotification} from "../objects/UserNotification";
 import {FtpController} from './FtpController';
 import {FtpScanner} from './FtpScanner';
 import {FtpDownloader} from './FtpDownloader';
+import {Utils} from "./Utils";
 
 //TODO: Create new SyncController for every time we try to sync.
 // This will prevent stuff like the FTP completed callbck from breaking when trying to access the downloadQueue which is missing.
@@ -176,6 +177,8 @@ class SyncController {
      */
     private getDestinationDirectory(file : FtpFile) : string {
         let remoteDirectory = file.relativeDirectory;
+        let sanitizedRemoteDirectory = Utils.sanitizeFtpPath(remoteDirectory);
+
         let pathMap: PathMapping = null;
 
         if (config.pathMappings) {
@@ -187,13 +190,13 @@ class SyncController {
                     //Strip the pathMap root from the remoteDirectory to get the relative mapping
                     let relativeDirectory = remoteDirectory.substring(pathMapDirectory.length);
 
-                    return FtpFile.appendSlash(pathMap.localPath) + relativeDirectory;
+                    return FtpFile.appendSlash(pathMap.localPath) + sanitizedRemoteDirectory;
                 }
             }
         }
         
         // Default value will be used if there are no matching path mappings
-        return FtpFile.appendSlash(config.localSyncRoot) + file.relativeDirectory;
+        return FtpFile.appendSlash(config.localSyncRoot) + sanitizedRemoteDirectory;
     }
 
     /**
