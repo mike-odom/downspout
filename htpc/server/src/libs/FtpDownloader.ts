@@ -8,6 +8,8 @@ import {TransferSpeedAverage} from "../objects/TransfersSpeedAverage";
 const logger = require('./Logger');
 import {FtpController} from './FtpController';
 
+import {Utils} from './Utils'
+
 class FtpDownloader {
     private _file: FtpFile;
     private _destinationDirectory: string;
@@ -43,7 +45,7 @@ class FtpDownloader {
             else logger.info('dir created')
         });
 
-        let localPath = FtpFile.appendSlash(localDirectory) + file.name;
+        let localPath = FtpFile.appendSlash(localDirectory) + Utils.sanitizeFtpPath(file.name);
         let tempPath = localPath + ".tmp";
 
         const ftp = FtpController.ftpForDownloading();
