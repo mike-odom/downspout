@@ -6,7 +6,7 @@ import {FtpFile} from "../objects/FtpFile";
 import {TransferSpeedAverage} from "../objects/TransfersSpeedAverage";
 
 const logger = require('./Logger');
-const FtpController = require('./FtpController');
+import {FtpController} from './FtpController';
 
 class FtpDownloader {
     private _file: FtpFile;
@@ -155,4 +155,4 @@ class FtpDownloader {
     }
 }
 
-module.exports = FtpDownloader;
+export { FtpDownloader };

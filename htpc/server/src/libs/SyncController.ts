@@ -8,9 +8,9 @@ import {UserNotificationModel} from "../../../shared/models/UserNotificationMode
 import {UserNotificationController} from "./UserNotificationController";
 import {UserNotification} from "../objects/UserNotification";
 
-const FtpController = require('./FtpController');
-const FtpScanner = require('./FtpScanner');
-const FtpDownloader = require('./FtpDownloader');
+import {FtpController} from './FtpController';
+import {FtpScanner} from './FtpScanner';
+import {FtpDownloader} from './FtpDownloader';
 
 //TODO: Create new SyncController for every time we try to sync.
 // This will prevent stuff like the FTP completed callbck from breaking when trying to access the downloadQueue which is missing.
