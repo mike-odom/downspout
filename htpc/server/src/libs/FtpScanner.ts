@@ -25,7 +25,7 @@ class FtpScanner {
         if (this.scanning) {
             // A sync was requested during our download,
             // this will attempt to run again with fresh FTP directory info.
-            console.log("Scan requested while scanning");
+            logger.info("Scan requested while scanning");
             this.syncRequestedWhileScanning = true;
             return;
         }

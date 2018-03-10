@@ -28,7 +28,6 @@ class UserNotificationController {
     }
 
     postNotification(notification: UserNotificationModel) {
-        console.log('Posting notification', notification.message);
         this.clearOldNotifications();
 
         notification.postedTime = Date.now();
