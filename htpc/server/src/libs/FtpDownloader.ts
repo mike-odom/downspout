@@ -6,7 +6,9 @@ import {FtpFile} from "../objects/FtpFile";
 import {TransferSpeedAverage} from "../objects/TransfersSpeedAverage";
 
 const logger = require('./Logger');
-const FtpController = require('./FtpController');
+import {FtpController} from './FtpController';
+
+import {Utils} from './Utils'
 
 class FtpDownloader {
     private _file: FtpFile;
@@ -43,7 +45,7 @@ class FtpDownloader {
             else logger.info('dir created')
         });
 
-        let localPath = FtpFile.appendSlash(localDirectory) + file.name;
+        let localPath = FtpFile.appendSlash(localDirectory) + Utils.sanitizeFtpPath(file.name);
         let tempPath = localPath + ".tmp";
 
         const ftp = FtpController.ftpForDownloading();
@@ -155,4 +157,4 @@ class FtpDownloader {
     }
 }
 
-module.exports = FtpDownloader;
+export { FtpDownloader };
