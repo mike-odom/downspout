@@ -50,5 +50,4 @@ class FtpController {
 
 }
 
-//Is this proper to do this with a singleton in node? idk node newb
-module.exports = FtpController;
+export { FtpController };

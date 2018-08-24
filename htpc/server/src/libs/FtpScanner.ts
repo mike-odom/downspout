@@ -5,7 +5,7 @@ import {FtpFile} from "../objects/FtpFile";
 const logger = require('./Logger');
 const config = require('../Config');
 
-const FTPController = require('./FtpController');
+import {FtpController} from './FtpController';
 
 type ScanCompleteCallbackFunction = (err: Error, files: FtpFile[], ftp) => void;
 
@@ -25,7 +25,7 @@ class FtpScanner {
         if (this.scanning) {
             // A sync was requested during our download,
             // this will attempt to run again with fresh FTP directory info.
-            console.log("Scan requested while scanning");
+            logger.info("Scan requested while scanning");
             this.syncRequestedWhileScanning = true;
             return;
         }
@@ -47,7 +47,7 @@ class FtpScanner {
 
         let syncFolder = config.seedboxFtp.syncRoot;
 
-        let ftp = FTPController.newJSFtp();
+        let ftp = FtpController.newJSFtp();
 
         function ftpScanError(err) {
             switch (err.code) {
@@ -132,12 +132,10 @@ class FtpScanner {
     }
 
     private resetPollingTimeout() {
-        logger.debug("resetPollingTimeout - clearTimeout");
         clearTimeout(this.pollingTimeoutId);
 
-        logger.debug("resetPollingTimeout - setTimeout");
         this.pollingTimeoutId = setTimeout(this.scanRequest.bind(this), config.seedboxFtp.pollingIntervalInSeconds * 1000)
     }
 }
 
-module.exports = FtpScanner;
+export {FtpScanner};
