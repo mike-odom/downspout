@@ -1,6 +1,6 @@
 const sanitize = require("sanitize-filename");
 const path = require('path');
-const _ = require('underscore');
+const _ = require('lodash');
 
 class Utils {
   /**
