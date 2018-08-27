@@ -177,7 +177,6 @@ class SyncController {
      */
     private getDestinationDirectory(file : FtpFile) : string {
         let remoteDirectory = file.relativeDirectory;
-        let sanitizedRemoteDirectory = Utils.sanitizeFtpPath(remoteDirectory);
 
         let pathMap: PathMapping = null;
 
@@ -190,13 +189,13 @@ class SyncController {
                     //Strip the pathMap root from the remoteDirectory to get the relative mapping
                     let relativeDirectory = remoteDirectory.substring(pathMapDirectory.length);
 
-                    return FtpFile.appendSlash(pathMap.localPath) + sanitizedRemoteDirectory;
+                    return FtpFile.appendSlash(pathMap.localPath) + Utils.sanitizeFtpPath(relativeDirectory);
                 }
             }
         }
         
         // Default value will be used if there are no matching path mappings
-        return FtpFile.appendSlash(config.localSyncRoot) + sanitizedRemoteDirectory;
+        return FtpFile.appendSlash(config.localSyncRoot) + Utils.sanitizeFtpPath(file.relativeDirectory);
     }
 
     /**
