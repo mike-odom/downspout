@@ -4,8 +4,10 @@ const _ = require('lodash');
 
 class Utils {
   /**
+   * Cleans up *nix style paths that wont work on Windows
+   *
    * Takes a path like "moo/cow/some silly : path/movie.avi"
-   * and returns "moo/cow/../some silly path/movie.avi"
+   * and returns "moo/cow/some silly path/movie.avi"
    *
    * @param {string} thePath
    * @returns {string}
