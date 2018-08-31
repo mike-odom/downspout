@@ -89,7 +89,7 @@ class SyncController {
 
         self.updateFileSizes(nonDupes, ftp);
 
-        logger.info("FTP scan found " + nonDupes.length + " files");
+        logger.info("FTP scan found " + nonDupes.length + " new files");
 
         self.downloadQueue = self.downloadQueue.concat(nonDupes);
 
