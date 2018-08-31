@@ -75,6 +75,15 @@ class FtpDownloader {
             }
 
             if (!err) {
+                let localSize = fs.statSync(tempPath).size;
+
+                if (localSize < file.size) {
+                    logger.info("File downloaded, but not completely. Will try again.");
+                    err = "Not completely downloaded";
+                }
+            }
+
+            if (!err) {
                 try {
                     fs.renameSync(tempPath, localPath);
                 } catch (exception) {
