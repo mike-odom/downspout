@@ -10,6 +10,7 @@ This app helps you sync from a seedbox / torrent machine, where media files are 
 
 ## Seedbox
 This script lives on your seedbox and requires your torrent application to call it.
+Deploy the ./seedbox folder to your seedbox and configure as below.
 
 ### Configuration
 ```bash
@@ -38,11 +39,11 @@ chmod u+x *.sh
 Setup the [Execute Plugin](http://dev.deluge-torrent.org/wiki/Plugins/Execute) to call seedbox/deluge.sh on torrent complete.
 
 ## HTPC 
-This app lives on your HTPC. It's the destination for the sync process. It sits and waits for a ping from the seedbox (or regularly scheduled interval) to scan the seedbox for new files that need to be pulled down.
+This app lives on your HTPC (Destination server). It's the destination for the sync process. It sits and waits for a ping from the seedbox (or regularly scheduled interval) to scan the seedbox for new files that need to be pulled down.
 
 ### Configuration
 
-Before running you must setup a config.js file of your own in the root of the htpc folder. See [Config.ts](htpc/src/ts/Config.ts) for more information about the config settings.
+Before running you must setup a config.js file of your own in the root. See [Config.ts](src/ts/Config.ts) for more information about the config settings.
 
 #### Example:
 ```
@@ -93,7 +94,6 @@ module.exports = config;
 #### Standard node start
 Do this first to make sure that everything runs ok.
 ```bash
-cd htpc
 
 # Install required packages
 npm install
