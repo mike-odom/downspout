@@ -5,9 +5,11 @@ import {FtpFile} from "../objects/FtpFile";
 const logger = require('./Logger');
 const config = require('../Config');
 
+var async = require("async");
+
 import {FtpController} from './FtpController';
 
-type ScanCompleteCallbackFunction = (err: Error, files: FtpFile[], ftp) => void;
+type ScanCompleteCallbackFunction = (err: Error, files: FtpFile[]) => void;
 
 class FtpScanner {
     private scanning = false;
@@ -81,8 +83,11 @@ class FtpScanner {
 
             //TODO: Sort the groups by date
 
-            // Got our list of files, send it back
-            self.scanComplete(null, downloadQueue, ftp);
+            // TODO: Scan FTP and pull their file sizes. We might have smaller data due to symlinks
+            self.updateFileSizes(downloadQueue, ftp, (err, updatedQueue) => {
+                // Got our list of files, send it back
+                self.scanComplete(err, updatedQueue, ftp);
+            });
         });
     }
 
@@ -121,12 +126,46 @@ class FtpScanner {
         return outList;
     }
 
+    /**
+     * The recursive directory search only gives us symlinks. We need to see how big the actual files are one by one.
+     *
+     *
+     * @param ftp
+     * @param list
+     */
+    private updateFileSizes(list: FtpFile[], ftp, completedCallback) {
+        async.mapLimit(list, 1,
+            (file, iterDone) => {
+                if (!file.isSymLink) {
+                    iterDone(null, file);
+                    return;
+                }
+
+                ftp.ls(file.fullPath, function (err, data) {
+                    if (err || data.length != 1) {
+                        iterDone("Error getting data for " + file.fullPath);
+                        return;
+                    }
+
+                    logger.info("Got target data", data[0]);
+                    file.targetData = data[0];
+
+                    iterDone(null, file);
+                });
+            }, (err, results) => {
+                logger.debug('updateFileSizes async.forEach done');
+                completedCallback(err, results);
+            });
+    }
+
     private scanComplete(err: Error, files : FtpFile[], ftp) {
         this.scanning = false;
 
         logger.info("FTP Scan completed");
 
-        this.scanCompleteCallbackFunc(err, files, ftp);
+        ftp.destroy();
+
+        this.scanCompleteCallbackFunc(err, files);
 
         this.resetPollingTimeout();
     }
