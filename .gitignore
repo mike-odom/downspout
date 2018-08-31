@@ -1,5 +1,16 @@
-npm-debug.log
-testFtpRoot
-*.bat
-*.lnk
+# This is per server config
+config.js
+
+*.log
+
+build/
+
+# JetBrains IDE user settings
 .idea
+
+# NodeJS
+node_modules/
+npm-debug.log
+
+# Yarn package manager
+yarn.lock
