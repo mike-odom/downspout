@@ -86,6 +86,10 @@ class FtpFile {
 
     }
 
+    get size(): number {
+        return this._targetData ? this._targetData.size : this._data.size
+    }
+
     set targetData(data) {
         this._targetData = data;
     }
@@ -109,7 +113,7 @@ class FtpFile {
         model.sourceRoot = this._basePath;
         model.destRoot = this._destinationRoot;
         model.path = this._relativePath;
-        model.size = this._targetData ? this._targetData.size : this._data.size;
+        model.size = this.size;
         model.downloaded = this.transferred;
         model.downloadRate = this._downloadRate;
         model.status = this.downloading ? "downloading" : "queued";
