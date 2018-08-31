@@ -84,7 +84,7 @@ class FtpDownloader {
             }
 
             if (!err) {
-                logger.info("File downloaded succesfully", localPath);
+                logger.info("File downloaded successfully", localPath);
             }
 
             self._file.downloading = false;
@@ -142,14 +142,7 @@ class FtpDownloader {
                 file.downloadRate = self._downloadSpeed.average();
             });
 
-            sock.on("close", function(err) {
-                if (err) {
-                    downloadDone(err);
-                    return;
-                }
-
-                downloadDone(null)
-            });
+            sock.on("close", downloadDone);
 
             // The sock stream is paused. Call resume() on it to start reading.
             sock.resume();
