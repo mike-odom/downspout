@@ -54,13 +54,13 @@ class FtpDownloader {
         let socket;
 
         let downloadDone = function(err) {
+            //Make sure no more data can come in
+            if (socket) {
+                socket.destroy();
+            }
+
             if (err) {
                 logger.error("Error downloading file\r\n", err);
-
-                //Make sure no more data can come in
-                if (socket) {
-                    socket.destroy();
-                }
             }
 
             FtpController.doneWithFtpObj(ftp);
