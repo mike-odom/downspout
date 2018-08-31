@@ -51,7 +51,7 @@ class SyncController {
         };
     }
 
-    public scanCompleteCallback(err, scannedQueue: FtpFile[], ftp) {
+    public scanCompleteCallback(err, scannedQueue: FtpFile[]) {
         const self = this;
 
         if (err) {
@@ -87,39 +87,11 @@ class SyncController {
             }
         }
 
-        self.updateFileSizes(nonDupes, ftp);
-
         logger.info("FTP scan found " + nonDupes.length + " new files");
 
         self.downloadQueue = self.downloadQueue.concat(nonDupes);
 
         self.downloadNextInQueue();
-    }
-
-    /**
-     * The recursive directory search only gives us symlinks. We need to see how big the actual files are one by one.
-     *
-     * This is fine to not block because it's only updating the file sizes to show on the UI and not any logic
-     *
-     * @param ftp
-     * @param list
-     */
-    private updateFileSizes(list: FtpFile[], ftp) {
-        for (let file of list) {
-            /** @type {FtpFile} */
-
-            if (file.isSymLink) {
-                ftp.ls(file.fullPath, function (err, data) {
-                    if (err || data.length != 1) {
-                        logger.log("Error getting data for", file.fullPath);
-                        return;
-                    }
-
-                    logger.info("Got target data", data[0]);
-                    file.targetData = data[0];
-                });
-            }
-        }
     }
 
     /**
