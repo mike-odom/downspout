@@ -3,7 +3,7 @@ import bodyParser = require('body-parser');
 
 const router = express.Router();
 
-const downloader = require('../libs/SyncController');
+const syncController = require('../libs/SyncController');
 
 /**
  * New download completed on the seedbox.
@@ -23,7 +23,7 @@ router.post('/', bodyParser.json(), function (req, res, next) {
 
     res.json(req.body);
 
-    downloader.syncRequest();
+    syncController.syncRequest();
 });
 
 /**
@@ -32,7 +32,7 @@ router.post('/', bodyParser.json(), function (req, res, next) {
 router.get('/', function (req, res) {
     res.json([]);
 
-    downloader.syncRequest();
+    syncController.syncRequest();
 });
 
 module.exports = router;
