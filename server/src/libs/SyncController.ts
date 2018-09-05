@@ -1,6 +1,7 @@
 import * as winston from "winston";
 
 const logger : winston.LoggerInstance = require('./Logger');
+const _ = require("lodash");
 
 const config = require('../Config');
 import {FtpFile} from "../objects/FtpFile";
@@ -17,15 +18,31 @@ import {Utils} from "./Utils";
 // This will prevent stuff like the FTP completed callbck from breaking when trying to access the downloadQueue which is missing.
 class SyncController {
     private downloadQueue: FtpFile[] = [];
-    private completedList: FtpFile[] = [];
-    private ftpScanner = new FtpScanner(this.scanCompleteCallback.bind(this));
+    private ftpScanner: FtpScanner = null;
+
+    private pollingTimeoutId;
 
     public syncRequest() {
         logger.info("syncRequest");
 
         UserNotificationController.getInstance().postNotification(new UserNotification("Sync Request received"));
-        
-        this.ftpScanner.scanRequest();
+
+        if (this.ftpScanner && this.ftpScanner.isScanning) {
+            logger.info("Scan requested while scanning. Started: " + this.ftpScanner.startedAt.fromNow());
+            return;
+        }
+
+        this.ftpScanner = new FtpScanner(this.scanCompleteCallback.bind(this), this.scanFileFoundCallback.bind(this));
+
+        this.ftpScanner.startScan();
+
+        this.resetSyncTimer();
+    }
+
+    public resetSyncTimer() {
+        clearTimeout(this.pollingTimeoutId);
+
+        this.pollingTimeoutId = setTimeout(this.syncRequest.bind(this), config.seedboxFtp.pollingIntervalInSeconds * 1000);
     }
 
     public downloadsStatus() {
@@ -52,8 +69,6 @@ class SyncController {
     }
 
     public scanCompleteCallback(err, scannedQueue: FtpFile[]) {
-        const self = this;
-
         if (err) {
             let message;
 
@@ -70,28 +85,16 @@ class SyncController {
 
             return;
         }
+    }
 
-        // Merge downloadQueue & scannedQueue
-        let nonDupes = [];
-        // Merge downloadQueue & scannedQueue
-        for (let t = 0; t < scannedQueue.length; t++) {
-            let testFile = scannedQueue[t];
-            for (let n = 0; n < self.downloadQueue.length; n++) {
-                if (testFile.equals(self.downloadQueue[n])) {
-                    testFile = null;
-                    break;
-                }
-            }
-            if (testFile) {
-                nonDupes.push(testFile);
-            }
+    private scanFileFoundCallback(file: FtpFile) {
+        if (!_.some(this.downloadQueue, otherFile => file.equals(otherFile))) {
+            logger.info("Adding " + file.fullPath + " to download queue");
+            this.downloadQueue.push(file);
+
+            // Trigger the downloads to start, if not already started.
+            this.downloadNextInQueue();
         }
-
-        logger.info("FTP scan found " + nonDupes.length + " new files");
-
-        self.downloadQueue = self.downloadQueue.concat(nonDupes);
-
-        self.downloadNextInQueue();
     }
 
     /**
@@ -192,8 +195,6 @@ class SyncController {
         //TODO: Tell media server that files have been updated. If we've finished a section.
 
         if (!err) {
-            this.completedList.push(file);
-
             UserNotificationController.getInstance().postNotification(new UserNotificationModel("Download completed " + file.name));
         }
 
