@@ -8,50 +8,52 @@ const config = require('../Config');
 var async = require("async");
 
 import {FtpController} from './FtpController';
+import moment = require("moment");
 
 type ScanCompleteCallbackFunction = (err: Error, files: FtpFile[]) => void;
+type ScanFileFoundCallbackFunction = (file: FtpFile) => void;
 
 class FtpScanner {
     private scanning = false;
-    private syncRequestedWhileScanning = false;
+    private cancelled = false;
+    private timeout;
 
-    private pollingTimeoutId = 0;
+    public readonly startedAt;
+
+    get isScanning(): boolean {
+        return this.scanning;
+    }
 
     private scanCompleteCallbackFunc: ScanCompleteCallbackFunction;
+    private scanFileFoundCallbackFunc: ScanFileFoundCallbackFunction;
 
-    public constructor(scanCompleteCallback: ScanCompleteCallbackFunction) {
+    private ftp;
+
+    public constructor(scanCompleteCallback: ScanCompleteCallbackFunction, scanFileFoundCallback: ScanFileFoundCallbackFunction) {
         this.scanCompleteCallbackFunc = scanCompleteCallback;
-    }
-    
-    public scanRequest() {
-        if (this.scanning) {
-            // A sync was requested during our download,
-            // this will attempt to run again with fresh FTP directory info.
-            logger.info("Scan requested while scanning");
-            this.syncRequestedWhileScanning = true;
-            return;
-        }
+        this.scanFileFoundCallbackFunc = scanFileFoundCallback;
 
-        this.syncRequestedWhileScanning = false;
-        this.startScan();
+        this.startedAt = moment();
     }
 
     /**
      * Looks at the files in the remote server and starts the download process
      *
      */
-    private startScan() {
-        let self = this;
+    public startScan() {
+        if (this.scanning) {
+            throw "startScan called while scanning";
+        }
 
-        self.scanning = true;
+        this.scanning = true;
 
-        self.resetPollingTimeout();
+        this.timeout = setTimeout(this.timeoutCancelCallback.bind(this), 5 * 60 * 1000);
 
         let syncFolder = config.seedboxFtp.syncRoot;
 
-        let ftp = FtpController.newJSFtp();
+        this.ftp = FtpController.newJSFtp();
 
-        function ftpScanError(err) {
+        const ftpScanError = (err) => {
             switch (err.code) {
                 //"Invalid FTP username/password"
                 case 530:
@@ -61,22 +63,27 @@ class FtpScanner {
                     //Only output the full error for unrecognized errors.
                     logger.error("Error trying to scan FTP", err);
             }
-            self.scanComplete(err, null, ftp);
-        }
+            this.scanComplete(err, null);
+        };
 
         //jsftp does not send these errors to the callback so we must handle them.
-        ftp.on('error', ftpScanError);
-        ftp.on('timeout', ftpScanError);
+        this.ftp.on('error', ftpScanError);
+        this.ftp.on('timeout', ftpScanError);
 
-        ftp.lsr(syncFolder, function (err, data) {
+        console.log("huh");
+
+        this.ftp.lsr(syncFolder, (err, data) => {
+            console.log("What?");
+
             if (err) {
+                console.log("huh what");
                 ftpScanError(err);
                 return;
             }
             //logger.info('Remote structure', JSON.stringify(data, null, 2));
 
             //TODO: Flatten out this list and group directories with __seedbox_sync_directory__ files in them
-            let downloadQueue = self.processFilesJSON(data, syncFolder, 20);
+            let downloadQueue = this.processFilesJSON(data, syncFolder, 20);
 
             //TODO: Sort each group's contents by date
             downloadQueue.sort(FtpFile.sortNewestFirst);
@@ -84,9 +91,9 @@ class FtpScanner {
             //TODO: Sort the groups by date
 
             // TODO: Scan FTP and pull their file sizes. We might have smaller data due to symlinks
-            self.updateFileSizes(downloadQueue, ftp, (err, updatedQueue) => {
+            this.updateFileSizes(downloadQueue, (err, updatedQueue) => {
                 // Got our list of files, send it back
-                self.scanComplete(err, updatedQueue, ftp);
+                this.scanComplete(err, updatedQueue);
             });
         });
     }
@@ -133,15 +140,26 @@ class FtpScanner {
      * @param ftp
      * @param list
      */
-    private updateFileSizes(list: FtpFile[], ftp, completedCallback) {
+    private updateFileSizes(list: FtpFile[], completedCallback) {
         async.mapLimit(list, 1,
             (file, iterDone) => {
+                if (this.cancelled) {
+                    iterDone("Scan cancelled")
+                    return;
+                }
                 if (!file.isSymLink) {
+                    this.scanFileFoundCallbackFunc(file);
+
                     iterDone(null, file);
                     return;
                 }
 
-                ftp.ls(file.fullPath, function (err, data) {
+                this.ftp.ls(file.fullPath, (err, data) => {
+                    if (this.cancelled) {
+                        iterDone("Scan cancelled")
+                        return;
+                    }
+
                     if (err || data.length != 1) {
                         iterDone("Error getting data for " + file.fullPath);
                         return;
@@ -149,6 +167,8 @@ class FtpScanner {
 
                     logger.info("Got target data", data[0]);
                     file.targetData = data[0];
+
+                    this.scanFileFoundCallbackFunc(file);
 
                     iterDone(null, file);
                 });
@@ -158,22 +178,38 @@ class FtpScanner {
             });
     }
 
-    private scanComplete(err: Error, files : FtpFile[], ftp) {
-        this.scanning = false;
-
+    private scanComplete(err: Error, files : FtpFile[]) {
         logger.info("FTP Scan completed");
 
-        ftp.destroy();
+        this.finish();
 
         this.scanCompleteCallbackFunc(err, files);
-
-        this.resetPollingTimeout();
     }
 
-    private resetPollingTimeout() {
-        clearTimeout(this.pollingTimeoutId);
+    private finish() {
+        this.scanning = false;
 
-        this.pollingTimeoutId = setTimeout(this.scanRequest.bind(this), config.seedboxFtp.pollingIntervalInSeconds * 1000)
+        //Swap callbacks to no-ops
+        this.scanCompleteCallbackFunc = () => { };
+        this.scanFileFoundCallbackFunc = () => { };
+
+        this.ftp.destroy();
+    }
+
+    private timeoutCancelCallback() {
+        if (!this.scanning || this.cancelled) {
+            return;
+        }
+
+        logger.warn("FtpScanner scan timed out");
+
+        this.cancel();
+    }
+
+    public cancel() {
+        this.cancelled = true;
+
+        this.finish();
     }
 }
 
