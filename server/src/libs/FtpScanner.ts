@@ -1,22 +1,26 @@
-import * as ts from "typescript/lib/tsserverlibrary";
-import Err = ts.server.Msg.Err;
+import moment = require("moment");
+import _ = require("lodash");
+import async = require("async");
+
 import {FtpFile} from "../objects/FtpFile";
 
 const logger = require('./Logger');
 const config = require('../Config');
 
-var async = require("async");
-
 import {FtpController} from './FtpController';
-import moment = require("moment");
 
-type ScanCompleteCallbackFunction = (err: Error, files: FtpFile[]) => void;
-type ScanFileFoundCallbackFunction = (file: FtpFile) => void;
+interface FtpScannerDelegate {
+    scannerComplete(err: Error, files: FtpFile[]): void;
+    scannerFileFound(file: FtpFile): void;
+    scannerShouldProcessFile(file: FtpFile) : boolean;
+}
 
 class FtpScanner {
     private scanning = false;
     private cancelled = false;
     private timeout;
+
+    private delegate: FtpScannerDelegate;
 
     public readonly startedAt;
 
@@ -24,14 +28,10 @@ class FtpScanner {
         return this.scanning;
     }
 
-    private scanCompleteCallbackFunc: ScanCompleteCallbackFunction;
-    private scanFileFoundCallbackFunc: ScanFileFoundCallbackFunction;
-
     private ftp;
 
-    public constructor(scanCompleteCallback: ScanCompleteCallbackFunction, scanFileFoundCallback: ScanFileFoundCallbackFunction) {
-        this.scanCompleteCallbackFunc = scanCompleteCallback;
-        this.scanFileFoundCallbackFunc = scanFileFoundCallback;
+    public constructor(delegate: FtpScannerDelegate) {
+        this.delegate = delegate;
 
         this.startedAt = moment();
     }
@@ -85,6 +85,8 @@ class FtpScanner {
             //TODO: Flatten out this list and group directories with __seedbox_sync_directory__ files in them
             let downloadQueue = this.processFilesJSON(data, syncFolder, 20);
 
+            downloadQueue = this.filterDownloadQueue(downloadQueue);
+
             //TODO: Sort each group's contents by date
             downloadQueue.sort(FtpFile.sortNewestFirst);
 
@@ -133,22 +135,24 @@ class FtpScanner {
         return outList;
     }
 
+    private filterDownloadQueue(downloadQueue: FtpFile[]): FtpFile[] {
+        return _.filter(downloadQueue, (file: FtpFile) => {
+            return this.delegate.scannerShouldProcessFile(file);
+        });
+    }
+
     /**
      * The recursive directory search only gives us symlinks. We need to see how big the actual files are one by one.
-     *
-     *
-     * @param ftp
-     * @param list
      */
     private updateFileSizes(list: FtpFile[], completedCallback) {
         async.mapLimit(list, 1,
             (file, iterDone) => {
                 if (this.cancelled) {
-                    iterDone("Scan cancelled")
+                    iterDone("Scan cancelled");
                     return;
                 }
                 if (!file.isSymLink) {
-                    this.scanFileFoundCallbackFunc(file);
+                    this.delegate.scannerFileFound(file);
 
                     iterDone(null, file);
                     return;
@@ -156,7 +160,7 @@ class FtpScanner {
 
                 this.ftp.ls(file.fullPath, (err, data) => {
                     if (this.cancelled) {
-                        iterDone("Scan cancelled")
+                        iterDone("Scan cancelled");
                         return;
                     }
 
@@ -168,7 +172,7 @@ class FtpScanner {
                     logger.info("Got target data", data[0]);
                     file.targetData = data[0];
 
-                    this.scanFileFoundCallbackFunc(file);
+                    this.delegate.scannerFileFound(file);
 
                     iterDone(null, file);
                 });
@@ -183,15 +187,18 @@ class FtpScanner {
 
         this.finish();
 
-        this.scanCompleteCallbackFunc(err, files);
+        this.delegate.scannerComplete(err, files);
     }
 
     private finish() {
         this.scanning = false;
 
         //Swap callbacks to no-ops
-        this.scanCompleteCallbackFunc = () => { };
-        this.scanFileFoundCallbackFunc = () => { };
+        this.delegate = new class implements FtpScannerDelegate {
+            scannerComplete(err: Error, files: FtpFile[]): void { }
+            scannerFileFound(file: FtpFile) { }
+            scannerShouldProcessFile(file: FtpFile): boolean { return false; }
+        };
 
         this.ftp.destroy();
     }
@@ -213,4 +220,4 @@ class FtpScanner {
     }
 }
 
-export {FtpScanner};
+export {FtpScanner, FtpScannerDelegate};
