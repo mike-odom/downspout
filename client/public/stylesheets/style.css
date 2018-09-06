@@ -77,3 +77,8 @@ div.downloads > div.item {
     display: inline-block;
     vertical-align: middle;
 }
+
+.quickAction {
+    cursor: pointer;
+    display: inline-block;
+}
