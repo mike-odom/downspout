@@ -2,6 +2,7 @@ import * as winston from "winston";
 
 const logger : winston.LoggerInstance = require('./Logger');
 const _ = require("lodash");
+import * as fs from "fs";
 
 const config = require('../Config');
 import {FtpFile} from "../objects/FtpFile";
@@ -10,13 +11,13 @@ import {UserNotificationController} from "./UserNotificationController";
 import {UserNotification} from "../objects/UserNotification";
 
 import {FtpController} from './FtpController';
-import {FtpScanner} from './FtpScanner';
+import {FtpScanner, FtpScannerDelegate} from './FtpScanner';
 import {FtpDownloader} from './FtpDownloader';
 import {Utils} from "./Utils";
 
 //TODO: Create new SyncController for every time we try to sync.
 // This will prevent stuff like the FTP completed callbck from breaking when trying to access the downloadQueue which is missing.
-class SyncController {
+class SyncController implements FtpScannerDelegate {
     private downloadQueue: FtpFile[] = [];
     private ftpScanner: FtpScanner = null;
 
@@ -32,7 +33,7 @@ class SyncController {
             return;
         }
 
-        this.ftpScanner = new FtpScanner(this.scanCompleteCallback.bind(this), this.scanFileFoundCallback.bind(this));
+        this.ftpScanner = new FtpScanner(this);
 
         this.ftpScanner.startScan();
 
@@ -68,7 +69,7 @@ class SyncController {
         };
     }
 
-    public scanCompleteCallback(err, scannedQueue: FtpFile[]) {
+    public scannerComplete(err, scannedQueue: FtpFile[]) {
         if (err) {
             let message;
 
@@ -87,7 +88,23 @@ class SyncController {
         }
     }
 
-    private scanFileFoundCallback(file: FtpFile) {
+    public scannerShouldProcessFile(file: FtpFile): boolean {
+        // Don't process if already in the download queue.
+        if (_.some(this.downloadQueue, otherFile => file.equals(otherFile))) {
+            return false;
+        }
+
+        // Don't process if file exists on disk
+        const path = FtpFile.appendSlash(this.getDestinationDirectory(file)) + Utils.sanitizeFtpPath(file.name);
+
+        if (fs.existsSync(path)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public scannerFileFound(file: FtpFile) {
         if (!_.some(this.downloadQueue, otherFile => file.equals(otherFile))) {
             logger.info("Adding " + file.fullPath + " to download queue");
             this.downloadQueue.push(file);
