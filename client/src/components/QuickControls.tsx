@@ -14,7 +14,7 @@ class QuickControls extends React.Component<QuickControlsProps, QuickControlsSta
     render() {
         return (
             <div>
-                <div onClick={this.scanClicked}>Scan FTP</div>
+                <div className="quickAction" onClick={this.scanClicked}>Scan FTP</div>
             </div>
         )
     }
