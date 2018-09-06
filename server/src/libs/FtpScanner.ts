@@ -70,13 +70,8 @@ class FtpScanner {
         this.ftp.on('error', ftpScanError);
         this.ftp.on('timeout', ftpScanError);
 
-        console.log("huh");
-
         this.ftp.lsr(syncFolder, (err, data) => {
-            console.log("What?");
-
             if (err) {
-                console.log("huh what");
                 ftpScanError(err);
                 return;
             }

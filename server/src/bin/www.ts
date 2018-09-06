@@ -44,10 +44,10 @@ server.on('listening', onListening);
 const io = socketIO(server);
 
 io.on('connect', (socket) => {
-    console.log('client connected');
+    logger.debug('client connected');
 
     socket.on('disconnect', () => {
-        console.log('client disconnected');
+        logger.debug('client disconnected');
     });
 });
 
