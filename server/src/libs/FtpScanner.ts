@@ -70,17 +70,24 @@ class FtpScanner {
         this.ftp.on('error', ftpScanError);
         this.ftp.on('timeout', ftpScanError);
 
+        logger.info('FtpScanner: lsr start');
         this.ftp.lsr(syncFolder, (err, data) => {
             if (err) {
+                logger.info('FtpScanner: lsr error');
                 ftpScanError(err);
                 return;
             }
-            //logger.info('Remote structure', JSON.stringify(data, null, 2));
+
+            logger.info('FtpScanner: lsr success');
 
             //TODO: Flatten out this list and group directories with __seedbox_sync_directory__ files in them
             let downloadQueue = this.processFilesJSON(data, syncFolder, 20);
 
+            logger.info('FtpScanner: processFilesJSON success');
+
             downloadQueue = this.filterDownloadQueue(downloadQueue);
+
+            logger.info('FtpScanner: filterDownloadQueue success');
 
             //TODO: Sort each group's contents by date
             downloadQueue.sort(FtpFile.sortNewestFirst);
@@ -89,6 +96,8 @@ class FtpScanner {
 
             // TODO: Scan FTP and pull their file sizes. We might have smaller data due to symlinks
             this.updateFileSizes(downloadQueue, (err, updatedQueue) => {
+                logger.info('FtpScanner: updateFileSizes success');
+
                 // Got our list of files, send it back
                 this.scanComplete(err, updatedQueue);
             });
