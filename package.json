@@ -76,7 +76,7 @@
     "mocha": "^5.2.0",
     "rimraf": "^2.6.1",
     "source-map-support": "^0.4.15",
-    "webpack": "^4.19.0",
-    "webpack-dev-middleware": "^3.3.0"
+    "webpack": "^2.3.3",
+    "webpack-dev-middleware": "^1.10.1"
   }
 }
