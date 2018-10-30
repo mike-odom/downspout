@@ -14,6 +14,7 @@ import {FtpController} from './FtpController';
 import {FtpScanner, FtpScannerDelegate} from './FtpScanner';
 import {FtpDownloader} from './FtpDownloader';
 import {Utils} from "./Utils";
+import RemoteDeleteQueue from "./RemoteDeleteQueue";
 
 //TODO: Create new SyncController for every time we try to sync.
 // This will prevent stuff like the FTP completed callbck from breaking when trying to access the downloadQueue which is missing.
@@ -22,6 +23,8 @@ class SyncController implements FtpScannerDelegate {
     private ftpScanner: FtpScanner = null;
 
     private pollingTimeoutId;
+
+    private remoteDeleteQueue = new RemoteDeleteQueue();
 
     public syncRequest() {
         logger.info("syncRequest");
@@ -32,6 +35,9 @@ class SyncController implements FtpScannerDelegate {
             logger.info("Scan requested while scanning. Started: " + this.ftpScanner.startedAt.fromNow());
             return;
         }
+
+        // Don't go hogging FTP connections to do deletes
+        this.remoteDeleteQueue.pause();
 
         this.ftpScanner = new FtpScanner(this);
 
@@ -86,6 +92,8 @@ class SyncController implements FtpScannerDelegate {
 
             return;
         }
+
+        this.remoteDeleteQueue.start();
     }
 
     public scannerShouldProcessFile(file: FtpFile): boolean {
@@ -94,17 +102,15 @@ class SyncController implements FtpScannerDelegate {
             return false;
         }
 
-        // Don't process if file exists on disk
-        const path = FtpFile.appendSlash(this.getDestinationDirectory(file)) + Utils.sanitizeFtpPath(file.name);
-
-        if (fs.existsSync(path)) {
-            return false;
-        }
-
         return true;
     }
 
     public scannerFileFound(file: FtpFile) {
+        if (this.fileAlreadyDownloaded(file)) {
+            this.addToRemoteDeleteQueue(file);
+            return;
+        }
+
         if (!_.some(this.downloadQueue, otherFile => file.equals(otherFile))) {
             logger.info("Adding " + file.fullPath + " to download queue");
             this.downloadQueue.push(file);
@@ -112,6 +118,14 @@ class SyncController implements FtpScannerDelegate {
             // Trigger the downloads to start, if not already started.
             this.downloadNextInQueue();
         }
+    }
+
+    public fileAlreadyDownloaded(file: FtpFile): boolean {
+        // Delete the file from FTP if it exists on disk
+        // It will have a temporary file name if downloading or partial, so this safe.
+        const path = FtpFile.appendSlash(this.getDestinationDirectory(file)) + Utils.sanitizeFtpPath(file.name);
+
+        return fs.existsSync(path);
     }
 
     /**
@@ -185,7 +199,7 @@ class SyncController implements FtpScannerDelegate {
                 }
             }
         }
-        
+
         // Default value will be used if there are no matching path mappings
         return FtpFile.appendSlash(config.localSyncRoot) + Utils.sanitizeFtpPath(file.relativeDirectory);
     }
@@ -204,8 +218,8 @@ class SyncController implements FtpScannerDelegate {
     }
 
     private downloadDone(err, file: FtpFile) {
-        if (!err && config.deleteRemoteFiles) {
-            this.deleteRemoteFile(file);
+        if (!err) {
+            this.addToRemoteDeleteQueue(file);
         }
 
         //TODO: Delete __seedbox_sync_folder__ file
@@ -221,25 +235,13 @@ class SyncController implements FtpScannerDelegate {
         this.downloadNextInQueue();
     }
 
-    private deleteRemoteFile(file: FtpFile) {
-        let deleteFtpError = function deleteFtpError(err) {
-            logger.error("Error deleting file, make sure you have proper permissions", file.actualPath, err);
+    private addToRemoteDeleteQueue(file: FtpFile) {
+        if (!config.deleteRemoteFiles) {
+            logger.warn('deleteRemoteFiles is turned off');
+            return;
+        }
 
-            //TODO: Handle this failed delete better. Logging or something.
-        };
-
-        //Delete the symlink on the server
-        let deleteFtp = FtpController.newJSFtp();
-        deleteFtp.on('error', deleteFtpError);
-        deleteFtp.on('timeout', deleteFtpError);
-
-        deleteFtp.raw("dele " + file.actualPath, function (err) {
-            if (err) {
-                deleteFtpError(err);
-            } else {
-                logger.info("Deleted symlink", file.actualPath);
-            }
-        });
+        this.remoteDeleteQueue.add(file);
     }
 }
 
