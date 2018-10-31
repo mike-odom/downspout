@@ -4,12 +4,13 @@ const _ = require("lodash");
 import {FtpFile} from "../objects/FtpFile";
 const logger : winston.LoggerInstance = require('./Logger');
 import {FtpController} from "./FtpController";
+import Timer = NodeJS.Timer;
 
 export default class RemoteDeleteQueue {
     queue: FtpFile[] = [];
     processing: boolean = false;
     paused: boolean = false;
-    delayTimeout = 0;
+    delayTimeout: Timer = null;
 
     add(file: FtpFile) {
         if (!_.some(this.queue, otherFile => file.equals(otherFile))) {
@@ -35,8 +36,8 @@ export default class RemoteDeleteQueue {
     processWithDelay() {
         clearTimeout(this.delayTimeout);
 
-        this.delayTimeout = window.setTimeout(() => {
-            this.delayTimeout = 0;
+        this.delayTimeout = setTimeout(() => {
+            this.delayTimeout = null;
             this.process();
         }, 5000);
     }
