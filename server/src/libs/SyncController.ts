@@ -47,9 +47,9 @@ class SyncController implements FtpScannerDelegate {
     }
 
     public resetSyncTimer() {
-        clearTimeout(this.pollingTimeoutId);
+        clearInterval(this.pollingTimeoutId);
 
-        this.pollingTimeoutId = setTimeout(this.syncRequest.bind(this), config.seedboxFtp.pollingIntervalInSeconds * 1000);
+        this.pollingTimeoutId = setInterval(this.syncRequest.bind(this), config.seedboxFtp.pollingIntervalInSeconds * 1000);
     }
 
     public downloadsStatus() {
