@@ -214,13 +214,9 @@ class FtpScanner {
 
         logger.warn("FtpScanner scan timed out");
 
-        this.cancel();
-    }
-
-    public cancel() {
         this.cancelled = true;
 
-        this.finish();
+        this.scanComplete(new Error("Scanner timed out"), []);
     }
 }
 
