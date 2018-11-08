@@ -189,9 +189,9 @@ class FtpScanner {
     private scanComplete(err: Error, files : FtpFile[]) {
         logger.info("FTP Scan completed");
 
-        this.finish();
-
         this.delegate.scannerComplete(err, files);
+
+        this.finish();
     }
 
     private finish() {
