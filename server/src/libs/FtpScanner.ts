@@ -197,6 +197,10 @@ class FtpScanner {
     private finish() {
         this.scanning = false;
 
+        if (this.timeout) {
+            clearTimeout(this.timeout);
+        }
+
         //Swap callbacks to no-ops
         this.delegate = new class implements FtpScannerDelegate {
             scannerComplete(err: Error, files: FtpFile[]): void { }
