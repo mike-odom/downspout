@@ -13,6 +13,7 @@ This script lives on your seedbox and requires your torrent application to call 
 Deploy the ./seedbox folder to your seedbox and configure as below.
 
 ### Configuration
+Create a `config.sh` file into the same folder as the files you just copied.
 ```bash
 #!/usr/bin/env bash
 
@@ -43,7 +44,7 @@ This app lives on your HTPC (Destination server). It's the destination for the s
 
 ### Configuration
 
-Before running you must setup a config.js file of your own in the root. See [Config.ts](src/ts/Config.ts) for more information about the config settings.
+Before running you must setup a config.js file of your own in the root. See [Config.ts](src/ts/Config.ts) for more information about the config settings. (You can copy config.sample.js to config.js as a starting point.)
 
 #### Example:
 ```
