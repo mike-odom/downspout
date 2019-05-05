@@ -1,10 +1,11 @@
 import * as winston from "winston";
-const _ = require("lodash");
-
+import { Client as BasicFtpClient } from 'basic-ftp';
 import {FtpFile} from "../objects/FtpFile";
-const logger : winston.LoggerInstance = require('./Logger');
 import {FtpController} from "./FtpController";
 import Timer = NodeJS.Timer;
+
+const logger : winston.LoggerInstance = require('./Logger');
+const _ = require("lodash");
 
 export default class RemoteDeleteQueue {
     queue: FtpFile[] = [];
@@ -42,7 +43,7 @@ export default class RemoteDeleteQueue {
         }, 5000);
     }
 
-    process() {
+    async process() {
         if (!this.queue.length || this.processing || this.paused) {
             return;
         }
@@ -60,30 +61,31 @@ export default class RemoteDeleteQueue {
             this.process();
         });
 
-        //Delete the symlink on the server
-        let deleteFtp = FtpController.newJSFtp();
-        deleteFtp.on('error', deleteFtpError);
-        deleteFtp.on('timeout', deleteFtpError);
+        let deleteFtp: BasicFtpClient;
+        try {
+            //Delete the symlink on the server
+            deleteFtp = await FtpController.newJSFtp();
+        } catch(err) {
+            deleteFtpError(err);
+            return;
+        }
+
 
         let queue = this.queue;
         // Just clear our existing queue, another scan will pick them up if there were errors.
         this.queue = [];
 
-        async.mapLimit(queue, 1,
-            (file, iterDone) => {
-                deleteFtp.raw("dele " + file.actualPath, function (err) {
-                    if (err) {
-                        logger.error("Error deleting file", file.actualPath, err);
-                        iterDone(err);
-                    } else {
-                        logger.info("Deleted symlink", file.actualPath);
-                        iterDone(null, file);
-                    }
-                });
-            }, (err, results) => {
-                logger.debug('deleteRemoteFile async.forEach done');
+        for (let file of queue) {
+            try {
+                await deleteFtp.remove(file.actualPath);
+                logger.info("Deleted symlink", file.actualPath);
+            } catch(err) {
+                logger.error("Error deleting file", file.actualPath, err);
+            }
+        }
 
-                finished();
-            });
+        logger.debug('deleteRemoteFile.process done');
+                
+        finished();
     }
 }

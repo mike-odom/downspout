@@ -1,28 +1,32 @@
-const JSFtp = require('./jsftp-lsr')(require("jsftp"));
+const BasicFtp = require("basic-ftp")
 
 const appConfig = require('../Config');
 
 const ftpConfig = appConfig.seedboxFtp;
 
-/** @type {JSFtp[]} */
 const ftpConnectionPool = [];
 
 class FtpController {
 
     /**
-     * Create a new JSFtp instance with our config info
+     * Create a new ftp client with our config info
      */
-    public static newJSFtp() {
-        const ftp = new JSFtp({
+    // TODO: Rename this
+    public static async newJSFtp() {
+        const client = new BasicFtp.Client(appConfig.networkTimeoutInSeconds * 1000);
+        
+        client.ftp.verbose = true
+
+        // TODO: Deal with error handling
+        await client.access({
             host: ftpConfig.host,
             port: ftpConfig.port || 21,
             user: ftpConfig.user || "anonymous",
-            pass: ftpConfig.password || "@anonymous"
+            password: ftpConfig.password || "@anonymous",
+            secure: ftpConfig.secure,
         });
 
-        ftp.timeout = appConfig.networkTimeoutInSeconds * 1000;
-
-        return ftp;
+        return client;
     }
 
     /**
@@ -30,7 +34,7 @@ class FtpController {
      *
      * @returns {JSFtp}
      */
-    public static ftpForDownloading() {
+    public static async ftpForDownloading() {
         //The pool is closed for repairs.
         // let ftp = ftpConnectionPool.pop() || this.newJSFtp();
         //
