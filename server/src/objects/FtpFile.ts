@@ -1,10 +1,10 @@
+import { FileInfo as BasicFtpFileInfo } from 'basic-ftp';
 import {DownloadModel} from "../../../shared/models/DownloadModel";
+import moment = require("moment");
+
 const UUID = require('uuid/v1');
 
 class FtpFile {
-    public static FTP_TYPE_FILE = 0;
-    public static FTP_TYPE_DIRECTORY = 1;
-    public static FTP_TYPE_SYM_LINK = 2;
 
     private _basePath: string;
     private _relativePath: string;
@@ -14,11 +14,10 @@ class FtpFile {
 
     private _key: string;
 
-    /** @type FtpData */
-    private _data: any;
+    private _data: BasicFtpFileInfo;
 
-    /** @type FtpData */
-    private _targetData: any;
+    // If symlink
+    private _targetData: BasicFtpFileInfo;
 
     private _transferred: number = 0;
 
@@ -39,10 +38,14 @@ class FtpFile {
     }
 
     get fullPath(): string {
-        return (this._data.hasOwnProperty("target")) ?
-            //Use target if it's a symlink
-            FtpFile.appendSlash(this._basePath) + FtpFile.appendSlash(this._relativePath) + this._data.target
-            : this.actualPath
+        if (this._data.link) {
+            if (this._data.link[0] == '/') {
+                return this._data.link;
+            }
+            // relative path
+            return FtpFile.appendSlash(this._basePath) + FtpFile.appendSlash(this._relativePath) + this._data.link;
+        }
+        return this.actualPath;
     }
 
     get destinationRoot(): string {
@@ -74,7 +77,7 @@ class FtpFile {
     }
 
     get isSymLink(): boolean {
-        return this._data.type == 2;
+        return this._data.isSymbolicLink;
     }
 
     get downloading(): boolean {
@@ -102,8 +105,27 @@ class FtpFile {
         this._basePath = basePath;
         this._relativePath = relativePath;
         this._data = ftpData;
-        this._timestamp = this._data.time;
+        this._timestamp = this.parseUnixDate(this._data.date); 
         this._key = UUID();
+    }
+
+    parseUnixDate(dateStr) {
+        // Unix should be one of these two formats:
+        //  Jul 31  2017
+        //  Apr  7 17:20 (If less than 6 months ago)
+        let date;
+        if (dateStr.includes(":")) {
+            date = moment(dateStr, "MMM D hh:mm");
+
+            var currentMonth = moment().month();
+            var month = date.month();
+            var year = moment().year() - (currentMonth < month ? 1 : 0);
+            date.year(year);
+        } else {
+            date = moment(dateStr, "MMM D YYYY");
+        }
+        console.log("parseUnixDate", dateStr, date);
+        return date.unix();
     }
 
     toModel() {
@@ -117,7 +139,7 @@ class FtpFile {
         model.downloaded = this.transferred;
         model.downloadRate = this._downloadRate;
         model.status = this.downloading ? "downloading" : "queued";
-        model.dateAdded = this._data.time;
+        model.dateAdded = this._timestamp;
         model.key = this._key;
 
         return model;
