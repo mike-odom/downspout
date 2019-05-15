@@ -3,8 +3,7 @@ import { Client as BasicFtpClient } from 'basic-ftp';
 import {FtpFile} from "../objects/FtpFile";
 import {FtpController} from "./FtpController";
 import Timer = NodeJS.Timer;
-
-const logger : winston.LoggerInstance = require('./Logger');
+import logger from "./Logger";
 const _ = require("lodash");
 
 export default class RemoteDeleteQueue {
@@ -51,7 +50,7 @@ export default class RemoteDeleteQueue {
         this.processing = true;
 
         let deleteFtpError = (err) => {
-            logger.error('RemoteDeleteQueue:', err);
+            logger.error('RemoteDeleteQueue: ', err);
             finished();
         };
 
@@ -78,9 +77,9 @@ export default class RemoteDeleteQueue {
         for (let file of queue) {
             try {
                 await deleteFtp.remove(file.actualPath);
-                logger.info("Deleted symlink", file.actualPath);
+                logger.info("Deleted symlink: " + file.actualPath);
             } catch(err) {
-                logger.error("Error deleting file", file.actualPath, err);
+                logger.error("Error deleting file: " + file.actualPath, err);
             }
         }
 

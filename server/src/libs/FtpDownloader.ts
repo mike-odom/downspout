@@ -1,15 +1,13 @@
 import makeDir = require('make-dir');
 import fs = require('fs');
 import once = require('once');
+import logger from "./Logger";
 import { Client as BasicFtpClient } from 'basic-ftp';
 import {FtpFile} from "../objects/FtpFile";
 import {TransferSpeedAverage} from "../objects/TransfersSpeedAverage";
-
-const logger: Winston = require('./Logger');
 import {FtpController} from './FtpController';
 
 import {Utils} from './Utils'
-import { Winston } from 'winston';
 
 class FtpDownloader {
     private _file: FtpFile;
@@ -34,7 +32,7 @@ class FtpDownloader {
 
         file.downloading = true;
 
-        logger.info("Downloading", file.fullPath);
+        logger.info("Downloading: " + file.fullPath);
 
         let localPath = FtpFile.appendSlash(localDirectory) + Utils.sanitizeFtpPath(file.name);
         let tempPath = localPath + ".tmp";
@@ -45,7 +43,7 @@ class FtpDownloader {
 
         let downloadDone = (err = null) => {
             if (err) {
-                logger.error("Error downloading file\r\n", "Code: " + err.code, err);
+                logger.error("Error downloading file. Code: " + err.code, err);
             }
 
             ftp && FtpController.doneWithFtpObj(ftp);
@@ -54,7 +52,7 @@ class FtpDownloader {
                 try {
                     writeStream.end();
                 } catch(exception) {
-                    logger.error('Error closing file descriptor.', tempPath, exception);
+                    logger.error('Error closing file descriptor: ' + tempPath, exception);
                     err = exception;
                 }
             }
@@ -68,7 +66,7 @@ class FtpDownloader {
                         err = "Not completely downloaded";
                     }
                 } catch (exception) {
-                    logger.error("Error getting file stats. Did it sprout wings and walk away?", tempPath, exception);
+                    logger.error("Error getting file stats. Did it sprout wings and walk away? " + tempPath, exception);
                     err = exception;
                 }
             }
@@ -77,13 +75,15 @@ class FtpDownloader {
                 try {
                     fs.renameSync(tempPath, localPath);
                 } catch (exception) {
-                    logger.error('Error renaming temp file', tempPath, exception);
+                    logger.error('Error renaming temp file: ' + tempPath, exception);
                     err = exception;
                 }
             }
 
-            if (!err) {
-                logger.info("File downloaded successfully", localPath);
+            if (err) {
+                logger.error("There was an error downloading this file. I might try again in another scan: " + file.fullPath);
+            } else {
+                logger.info("File downloaded successfully: " + localPath);
             }
 
             this._file.downloading = false;
@@ -96,7 +96,7 @@ class FtpDownloader {
 
         try {
             ftp = await FtpController.ftpForDownloading();
-            ftp.ftp.log = logger.debug;
+            ftp.ftp.log = (message) => logger.debug(message);
         } catch (err) {
             logger.error("Unable to connect to FTP");
             downloadDone(err);
@@ -106,7 +106,7 @@ class FtpDownloader {
             //Create the full path. jsftp will not error if the directory doesn't exist.
             await makeDir(localDirectory);
         } catch (err) {
-            logger.error("Unable to make directory", localDirectory);
+            logger.error("Unable to make directory: " + localDirectory);
             downloadDone(err);
             return;
         }
@@ -125,7 +125,7 @@ class FtpDownloader {
             writeStream = fs.createWriteStream(tempPath, {flags: 'a'});
 
             writeStream.on('error', err => {
-                logger.error("writeStream error", tempPath, err);
+                logger.error("writeStream error: " + tempPath, err);
                 // Let's let basic-ftp handle this
                 //downloadDone(err);
             })
@@ -133,7 +133,7 @@ class FtpDownloader {
             //For displaying on the client.
             file.transferred = skipBytes;
         } catch(exception) {
-            logger.error("Error opening file for writing", tempPath);
+            logger.error("Error opening file for writing: " + tempPath, exception);
             downloadDone(exception);
             return;
         }
@@ -147,9 +147,9 @@ class FtpDownloader {
                 file.downloadRate = this._downloadSpeed.average();
             })
 
-            logger.debug("Actually downloading file", file.fullPath);
+            logger.debug("Actually downloading file: " + file.fullPath);
             await ftp.download(writeStream, file.fullPath, skipBytes); 
-            logger.debug("Success downloading file", file.fullPath);
+            logger.debug("Success downloading file: " + file.fullPath);
         } catch(err) {
             downloadDone(err);
             return;

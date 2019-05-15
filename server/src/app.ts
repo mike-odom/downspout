@@ -1,8 +1,6 @@
 require('source-map-support').install();
 
-import winston = require('winston');
-const logger : winston.LoggerInstance = require('./libs/Logger');
-
+import logger from "./libs/Logger";
 const appConfig = require('./Config');
 
 import express = require('express');
@@ -55,7 +53,7 @@ if ("testFtpServer" in appConfig) {
     });
 
     server.on('error', function(error) {
-        logger.error('FTP Server error:', error);
+        logger.error('FTP Server error: ', error);
     });
 
     server.on('client:connected', function(connection) {
