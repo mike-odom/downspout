@@ -36,14 +36,11 @@ class FtpDownloader {
 
         logger.info("Downloading", file.fullPath);
 
-        logger.info("mkdirp", localDirectory);
-
         let localPath = FtpFile.appendSlash(localDirectory) + Utils.sanitizeFtpPath(file.name);
         let tempPath = localPath + ".tmp";
 
         let ftp: BasicFtpClient;
 
-        let fd: number;
         let writeStream: fs.WriteStream | import("stream").Writable;
 
         let downloadDone = (err = null) => {
@@ -53,25 +50,26 @@ class FtpDownloader {
 
             ftp && FtpController.doneWithFtpObj(ftp);
 
-            if (fd) {
+            if (writeStream) {
                 try {
-                    if (writeStream) {
-                        writeStream.end();
-                    } else {
-                        fs.closeSync(fd);
-                    }
+                    writeStream.end();
                 } catch(exception) {
-                    logger.error('Error closing file descriptor.?', exception);
+                    logger.error('Error closing file descriptor.', tempPath, exception);
                     err = exception;
                 }
             }
 
             if (!err) {
-                let localSize = fs.statSync(tempPath).size;
+                try {
+                    let localSize = fs.statSync(tempPath).size;
 
-                if (localSize < file.size) {
-                    logger.info("File downloaded, but not completely. Will try again.");
-                    err = "Not completely downloaded";
+                    if (localSize < file.size) {
+                        logger.info("File downloaded, but not completely. Will try again.");
+                        err = "Not completely downloaded";
+                    }
+                } catch (exception) {
+                    logger.error("Error getting file stats.", tempPath, exception);
+                    err = exception;
                 }
             }
 
@@ -113,20 +111,23 @@ class FtpDownloader {
             return;
         }
 
-        let skipBytes: number;
+        let skipBytes: number = 0;
+
         try {
-            fd = fs.openSync(tempPath, "a");
-
-            skipBytes = fs.fstatSync(fd).size;
-
-            if (skipBytes) {
-                logger.info("file already exists, skipping bytes " + skipBytes);
+            if (fs.existsSync(tempPath)) {
+                skipBytes = fs.statSync(tempPath).size;
+    
+                if (skipBytes) {
+                    logger.info("file already exists, skipping bytes " + skipBytes);
+                }
             }
 
-            writeStream = fs.createWriteStream(tempPath, {fd: fd});
+            writeStream = fs.createWriteStream(tempPath, {flags: 'a'});
 
             writeStream.on('error', err => {
-                downloadDone(err);
+                logger.error("writeStream error", tempPath, err);
+                // Let's let basic-ftp handle this
+                //downloadDone(err);
             })
 
             //For displaying on the client.
