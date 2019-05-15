@@ -19,8 +19,7 @@ const logger : winston.LoggerInstance = new (winston.Logger)({
                 handleExceptions: true,
                 humanReadableUnhandledException: true
             })
-    ],
-    exitOnError: false, // <--- set this to false
+    ]
 });
 
 module.exports = logger;
