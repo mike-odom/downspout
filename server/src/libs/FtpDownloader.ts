@@ -68,7 +68,7 @@ class FtpDownloader {
                         err = "Not completely downloaded";
                     }
                 } catch (exception) {
-                    logger.error("Error getting file stats.", tempPath, exception);
+                    logger.error("Error getting file stats. Did it sprout wings and walk away?", tempPath, exception);
                     err = exception;
                 }
             }
