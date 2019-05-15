@@ -1,6 +1,6 @@
 import * as winston from "winston";
 
-const logger : winston.LoggerInstance = require('./Logger');
+import logger from "./Logger";
 const _ = require("lodash");
 import * as fs from "fs";
 
@@ -86,7 +86,7 @@ class SyncController implements FtpScannerDelegate {
                 default:
                    message = err.toString();
             }
-            logger.error("scanCompleteCallback: ", message);
+            logger.error("scanCompleteCallback: " + message);
 
             UserNotificationController.getInstance().postNotification(new UserNotificationModel(message));
 

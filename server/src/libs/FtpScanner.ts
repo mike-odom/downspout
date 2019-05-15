@@ -3,7 +3,7 @@ import _ = require("lodash");
 import { Client as BasicFtpClient, FileInfo as BasicFtpFileInfo, FileType as BasicFtpFileType } from "basic-ftp";
 import {FtpFile} from "../objects/FtpFile";
 
-const logger = require('./Logger');
+import logger from "./Logger";
 const config = require('../Config');
 
 import {FtpController} from './FtpController';
@@ -49,14 +49,14 @@ class FtpScanner {
                     logger.error(err.toString());
                     break;
                 case 'ENOTFOUND':
-                    logger.error("DNS/Network issue: ", err.toString());
+                    logger.error("DNS/Network issue: " + err.toString());
                     break;
                 case 'ECONNREFUSED':
-                    logger.error("Connection refused: ", err.toString());
+                    logger.error("Connection refused: " + err.toString());
                     break;
                 default:
                     //Only output the full error for unrecognized errors.
-                    logger.error("Error trying to scan FTP", err);
+                    logger.error("Error trying to scan FTP: ", err);
             }
             this.scanComplete(err);
         }
@@ -152,19 +152,21 @@ class FtpScanner {
 
             if (!file.isSymLink) {
                 this.delegate.scannerFileFound(file);
-                logger.debug("updateFileSizes file was not symlink", file);
+                logger.debug("updateFileSizes file was not symlink: " + file.fullPath);
                 continue;
             }
             
             try {
                 let listResults = await this.ftp.list(file.fullPath);
 
-                logger.info("Got target data", listResults[0]);
+                logger.info("Got target data");
+                logger.info(listResults[0]);
                 file.targetData = listResults[0];
 
                 this.delegate.scannerFileFound(file);
             } catch(err) {
-                logger.error('Error reading file size: ', err);
+                logger.error('Error reading file size: ' + file.fullPath);
+                logger.error(err);
             }
         }
     }

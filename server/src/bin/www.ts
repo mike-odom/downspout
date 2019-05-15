@@ -14,9 +14,7 @@ const http = require('http');
 
 import socketIO = require('socket.io');
 
-import winston = require('winston');
-const logger : winston.LoggerInstance = require('../libs/Logger');
-
+import logger from "../libs/Logger";
 const config = require('../Config');
 
 const syncController = require('../libs/SyncController');

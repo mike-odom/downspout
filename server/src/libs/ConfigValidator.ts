@@ -1,6 +1,4 @@
-import winston = require('winston');
-const logger : winston.LoggerInstance = require('./Logger');
-
+import logger from "./Logger";
 import fs = require('fs');
 
 /**
