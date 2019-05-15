@@ -116,8 +116,6 @@ class FtpScanner {
         await ftp.cd(FtpFile.appendSlash(basePath) + relativePath);
         const fileInfoArray: BasicFtpFileInfo[] = await ftp.list();
 
-        console.log("fileInfoArray", fileInfoArray);
-
         for (let file of fileInfoArray) {
             const fileRelativePath = FtpFile.appendSlash(relativePath) + file.name;
             if (file.isSymbolicLink) {
