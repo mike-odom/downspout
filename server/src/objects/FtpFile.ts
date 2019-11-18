@@ -1,7 +1,7 @@
 import { FileInfo as BasicFtpFileInfo } from 'basic-ftp';
 import {DownloadModel} from "../../../shared/models/DownloadModel";
 import moment = require("moment");
-
+const pathPosix = require('path').posix;
 const UUID = require('uuid/v1');
 
 class FtpFile {
@@ -25,12 +25,9 @@ class FtpFile {
 
     private _downloading: boolean = false;
 
-    get directory(): string {
-        return FtpFile.appendSlash(this._basePath) + FtpFile.appendSlash(this._relativePath)
-    }
-
     get actualPath(): string {
-        return FtpFile.appendSlash(this._basePath) + FtpFile.appendSlash(this._relativePath) + this._data.name;
+        const path = FtpFile.appendSlash(this._basePath) + FtpFile.appendSlash(this._relativePath) + this._data.name;
+        return pathPosix.normalize(path);
     }
 
     get relativeDirectory(): string {
@@ -42,8 +39,9 @@ class FtpFile {
             if (this._data.link[0] == '/') {
                 return this._data.link;
             }
-            // relative path
-            return FtpFile.appendSlash(this._basePath) + FtpFile.appendSlash(this._relativePath) + this._data.link;
+            // symlink path
+            const path = FtpFile.appendSlash(this._basePath) + FtpFile.appendSlash(this._relativePath) + this._data.link;
+            return pathPosix.normalize(path);
         }
         return this.actualPath;
     }
